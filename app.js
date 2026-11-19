@@ -1781,22 +1781,24 @@ const segsIn = (lv, c) => { const s = SEGS.segs; if (!s.byCell) s.byCell = {}; l
 function segVisible(){ return !!(SEGS && segOn && S.q && S.q.id === 'tvul' && S.m && S.m.id !== 'tfall' && S.ext === 'corr' && map.getZoom() >= SEGZ); }
 /* choosing the rating measure switches the segments to the rating colors; the Erosion risk button still switches them back */
 let segLastM = null; function segSync(){ const k = (S.q && S.q.id) + ':' + (S.m && S.m.id); if (k !== segLastM){ segLastM = k; if (k === 'tvul:tsr') segMode = 'tsr'; } }
-function segDraw(){ segSync(); if (!SEGS){ return; } if (!SEGL){ if (!map.getPane('segs')){ const sp = map.createPane('segs'); sp.style.zIndex = 430; sp.style.pointerEvents = 'none'; } SEGL = L.layerGroup().addTo(map); SEGL.r = L.canvas({pane:'segs', padding:.3}); }
-  if (!segVisible()){ if (SEGL.getLayers().length) SEGL.clearLayers(); segKey = ''; return; }   /* turning the box off clears the segments right away */
-  const b = map.getBounds().pad(.15), s = SEGS.segs, key = [b.toBBoxString(), map.getZoom() | 0, segMode].join('|'); if (key === segKey) return; segKey = key; SEGL.clearLayers();
-  const R = RAMP.tvul, s_ = b.getSouth(), n_ = b.getNorth(), w_ = b.getWest(), e_ = b.getEast(), wt = map.getZoom() >= 14 ? 6 : 4.5;
-  const vis = [];
+/* casing, color and the dashed low-and-flat line: three line layers on one source of the segments in view, wider from zoom 14 */
+const segW = (a, b) => ['step', ['zoom'], a, 14 - 1, b];
+function segDraw(){ segSync(); if (!SEGS){ return; }
+  if (!SEGL){ const rl = {'line-cap':'round', 'line-join':'round'};
+    SEGL = new G.Overlay(map, 'segs', 'segs', [{type:'line', layout:rl, paint:{'line-color':'#0B1320', 'line-width':segW(7.5, 9), 'line-opacity':.9}},
+      {type:'line', layout:rl, paint:{'line-color':['get', 'c'], 'line-width':segW(4.5, 6)}},
+      {type:'line', filter:['==', ['get', 'w'], 1], layout:{'line-cap':'round'}, paint:{'line-color':SEGWETC, 'line-width':segW(3, 4.5), 'line-dasharray':['step', ['zoom'], ['literal', [4 / 3, 6 / 3]], 14 - 1, ['literal', [4 / 4.5, 6 / 4.5]]]}}]); }
+  if (!segVisible()){ if (segKey) SEGL.clear(); segKey = ''; return; }   /* turning the box off clears the segments right away */
+  const b = map.getBounds().pad(.15), s = SEGS.segs, key = [b.toBBoxString(), map.getZoom() | 0, segMode].join('|'); if (key === segKey) return; segKey = key;
+  const R = RAMP.tvul, s_ = b.getSouth(), n_ = b.getNorth(), w_ = b.getWest(), e_ = b.getEast(), fs = [];
   for (let i = 0; i < s.n; i++){ const o = 4 * i; if (s.bb[o + 2] < s_ || s.bb[o] > n_ || s.bb[o + 3] < w_ || s.bb[o + 1] > e_) continue;
-    const pts = segPts(i); vis.push([i, pts]); }
-  /* all the dark casing first, then the colors, with round ends, so neighboring segments join without notches or slivers */
-  vis.forEach(([i, pts]) => L.polyline(pts, {renderer:SEGL.r, pane:'segs', color:'#0B1320', weight:wt + 3, opacity:.9, lineCap:'round', lineJoin:'round', interactive:false}).addTo(SEGL));
-  for (const [i, pts] of vis){ const k = segCls(s.risk[i]);
-    const ln = L.polyline(pts, {renderer:SEGL.r, pane:'segs', color:segMode === 'tsr' ? (tsrOf(i) < 0 ? '#8A96A8' : TSR[tsrOf(i)].c) : k < 0 ? '#8A96A8' : R[k], weight:wt, opacity:1, lineCap:'round', lineJoin:'round', interactive:false}); ln._si = i; ln.addTo(SEGL);
-    if (segWet(i)) L.polyline(pts, {renderer:SEGL.r, pane:'segs', color:SEGWETC, weight:Math.max(2.5, wt - 1.5), opacity:1, dashArray:'4 6', lineCap:'round', interactive:false}).addTo(SEGL); } }
+    const k = segCls(s.risk[i]), c = segMode === 'tsr' ? (tsrOf(i) < 0 ? '#8A96A8' : TSR[tsrOf(i)].c) : k < 0 ? '#8A96A8' : R[k];
+    fs.push({type:'Feature', properties:{i, c, w:segWet(i) ? 1 : 0}, geometry:{type:'LineString', coordinates:segPts(i).map(p => [p[1], p[0]])}}); }
+  SEGL.set({type:'FeatureCollection', features:fs}); }
 /* the segment layer lets clicks through to the cells under it; a click within a few pixels of a drawn segment opens the segment instead */
-function segHit(ll){ if (!SEGL || !segKey || !segVisible()) return false; const pt = map.latLngToLayerPoint(ll); let best = null;
-  SEGL.eachLayer(ly => { if (best == null && ly._si != null && ly._pxBounds && ly._containsPoint && ly._containsPoint(pt)) best = ly._si; });
-  if (best == null) return false; segPopup(best, ll); return true; }
+function segHit(ll){ if (!SEGL || !segKey || !segVisible()) return false; const p = map.latLngToContainerPoint(ll), t = map.getZoom() >= 14 ? 3 : 2.25;
+  const f = map.ml.queryRenderedFeatures([[p.x - t, p.y - t], [p.x + t, p.y + t]], {layers:[SEGL.ids[1]]})[0];
+  if (!f) return false; segPopup(f.properties.i, ll); return true; }
 function segPopup(i, ll){ const s = SEGS.segs, v = (a, d = 0) => a && a[i] != null ? fmt(a[i], d) : '–', r = s.risk[i];
   let rec = ''; if (DEFIC && DEFIC.segs){ if (!DEFIC.segs.m) DEFIC.segs.m = new Map(DEFIC.segs.id.map((x, j) => [x, j])); const j = DEFIC.segs.m.get(s.id[i]);
     rec = j == null ? 'none recorded' : `${DEFIC.segs.eros[j]} erosion, ${DEFIC.segs.drain[j]} drainage, ${DEFIC.segs.other[j]} other`; }
@@ -1805,7 +1807,7 @@ function segPopup(i, ll){ const s = SEGS.segs, v = (a, d = 0) => a && a[i] != nu
     <tr><td>Steepest sustained grade</td><td>${v(s.gmax, 1)}%</td></tr><tr><td>Average grade</td><td>${v(s.gavg, 1)}%</td></tr><tr><td>Over 10% / over 20%</td><td>${v(s.o10)}% / ${v(s.o20)}% of it</td></tr>
     <tr><td>Hillside steepness</td><td>${v(s.side)}%</td></tr><tr><td>Direction</td><td>${s.align[i] == null ? '–' : alignWords(s.align[i])}</td></tr><tr><td>On the fall line</td><td>${v(s.fall)}% of it</td></tr>${low}${segWet(i) ? '<tr><td>Low, flat trail</td><td>yes: water tends to sit here; stretches like this recorded about twice the drainage problems</td></tr>' : ''}
     ${rec ? `<tr><td>Recorded in trail assessments</td><td>${rec}</td></tr>` : ''}</table><span class="segnote">About 500 feet of trail. Risk ranks grade (60%), hillside steepness (20%) and how directly it climbs (20%) among all segments. The sustainability rating comes from average grade and how directly the trail climbs.</span></div>`;
-  L.popup({maxWidth:300, className:'segpopw'}).setLatLng(ll).setContent(html).openOn(map); }
+  popOpen(ll, html, {maxWidth:300, className:'segpopw'}); }
 const EXTNO = ['tvul'];   /* questions that list the extent but measure only the trail itself, so HUC10 is shown greyed out */
 QVIZ.pest = {title:'Forest at risk by state', note:'Share of the treed area at risk of losing 25% or more of its tree basal area to insects and diseases over 2024 to 2038, with the acres at risk (USDA Forest Service 2024 National Insect and Disease Risk Map).' + VSTNOTE, fn(lv, cells){
     const r = VST.map(() => 0), t = VST.map(() => 0);
@@ -2788,10 +2790,18 @@ const BASES = {}, DARKBASE = {}; BASEDEF.forEach(b => { BASES[b[0]] = true; DARK
 const TNM = 'https://basemap.nationalmap.gov/arcgis/rest/services/';   /* Save for offline keeps these imagery tiles */
 if (!BASES[S.base]) S.base = DEFBASE;
 map.setBase(S.base);
-const trailR = null;   /* PARKED: the trail is drawn with Leaflet until stage 2 */
-const trailCase = L.polyline(D.trail, {renderer:trailR, color:'#fff', weight:4, opacity:.9, interactive:false}).addTo(map);
-const trailLine = L.polyline(D.trail, {renderer:trailR, color:'#14294A', weight:1.5, interactive:false}).addTo(map);
-function trailStyle(){ const z = map.getZoom(), far = z < 9, dk = DARKBASE[S.base]; const wide = z < 7; trailCase.setStyle({color: dk ? '#14294A' : '#fff', weight: wide ? 2 : far ? 3.4 : 4.6, opacity: wide ? 0 : far ? .75 : .9}); trailLine.setStyle({color: dk ? '#fff' : '#14294A', weight: wide ? .8 : far ? 1.6 : 2.2, opacity: wide ? .7 : 1}); }
+/* The trail line: a white casing under a dark line (the other way round over imagery). TRAIL.lines is the line being drawn,
+   [lat, lng] lists: the generalized line in the grid file, replaced by the official centerline once it loads. */
+const TRAIL = {lines:D.trail, b:null, bounds(){ return this.b || (this.b = G.bounds([].concat(...this.lines))); },
+  set(lines){ this.lines = lines; this.b = null; trailOv.set(G.lines(lines)); }};
+const trailLayers = () => [{type:'line', layout:{'line-join':'round', 'line-cap':'round'}, paint:{'line-color':'#fff', 'line-width':4, 'line-opacity':.9}},
+  {type:'line', layout:{'line-join':'round', 'line-cap':'round'}, paint:{'line-color':'#14294A', 'line-width':1.5}}];
+const trailOv = new G.Overlay(map, 'trail', 'trail', trailLayers()).set(G.lines(D.trail));
+/* the trail's look for the zoom and basemap: [casing color, width, opacity, line color, width, opacity] */
+function trailLook(){ const z = map.getZoom(), far = z < 9, dk = DARKBASE[S.base], wide = z < 7;
+  return [dk ? '#14294A' : '#fff', wide ? 2 : far ? 3.4 : 4.6, wide ? 0 : far ? .75 : .9, dk ? '#fff' : '#14294A', wide ? .8 : far ? 1.6 : 2.2, wide ? .7 : 1]; }
+function trailPaint(ov, s, k){ ov.paint(0, 'line-color', s[0]).paint(0, 'line-width', s[1]).paint(0, 'line-opacity', s[2] * k).paint(1, 'line-color', s[3]).paint(1, 'line-width', s[4]).paint(1, 'line-opacity', s[5] * k); }
+function trailStyle(){ trailPaint(trailOv, trailLook(), 1); }
 /* the selected cell or cells: a white line under a dark one; the box being drawn: a dashed white rectangle */
 const SELO = new G.Overlay(map, 'sel', 'sel', [{type:'line', paint:{'line-color':'#fff', 'line-width':6}}, {type:'line', paint:{'line-color':'#14294A', 'line-width':2.5}}]);
 const selOuter = {setLatLngs(r){ SELO.set(G.polys(r)); return this; }}, selInner = {setLatLngs(){ return this; }};
@@ -2824,7 +2834,8 @@ function cellAt(point){ if (!shown || !S.cells || !GROUP[shown]) return null;
 /* the hover label: the measure's value, its name and the trail mile */
 const tip = new maplibregl.Popup({closeButton:false, closeOnClick:false, anchor:'bottom', offset:8, maxWidth:'none', className:'tip'});
 let tipOn = false; tip.remove = (r => function(){ tipOn = false; return r.call(this); })(tip.remove);
-map.on('mousemove', e => { const hit = !S.drawing && !(TOUCHDEV && isPhone()) ? cellAt(e.containerPoint) : null;
+map.on('mousemove', e => { const onMap = !e.originalEvent || e.originalEvent.target === map.ml.getCanvas();   /* not over an icon, label or popup */
+  const hit = onMap && !S.drawing && !(TOUCHDEV && isPhone()) ? cellAt(e.containerPoint) : null;
   map.ml.getCanvas().style.cursor = S.drawing ? '' : hit ? 'pointer' : '';
   if (!hit || (hit[1] === S.cell && hit[0] === S.cellLv)){ if (tipOn) tip.remove(); return; }
   const [lv, c] = hit, L_ = D.levels[lv], k = lv + c + '|' + S.m.id;
@@ -3046,9 +3057,7 @@ function fitSection(){ const lv = 'wheel', L_ = D.levels[lv], pts = [];
 /* ---------- live layers from the NPS Appalachian Trail ArcGIS services ----------
    These load in the visitor's browser, only when switched on. If a service is unreachable the layer reports it and the rest of the page is unaffected. */
 const SVC = 'https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/';
-map.createPane('lands').style.zIndex = 411;   /* administrative areas draw over the grid cells, under the trail */
-map.createPane('feat').style.zIndex = 440;
-const landsR = L.svg({pane:'lands', padding:.3}), featR = L.svg({pane:'feat', padding:.3});
+/* administrative areas and maintained landscapes draw over the grid cells, under the trail; points and side trails over everything */
 const LANDKEY = [['FEDERAL LAND - NPS - APPA FEE','NPS, A.T. fee land','rgb(0,77,168)'],['FEDERAL LAND - NPS - APPA EASEMENT','NPS, A.T. easement','rgb(145,135,245)'],['FEDERAL LAND - NPS - APPA ROW EASEMENT','NPS, A.T. right-of-way easement','rgb(190,210,255)'],
   ['FEDERAL LAND - NPS - APPA ADMINISTRATIVELY TRANSFERRED LANDS','NPS, A.T. administratively transferred','rgb(255,190,190)'],['FEDERAL LAND - NPS - OTHER','NPS, other park units','rgb(223,115,255)'],['FEDERAL LAND - USFS','US Forest Service','rgb(38,115,0)'],
   ['FEDERAL LAND - USFS - APPA ADMINISTRATIVELY TRANSFERRED LANDS','USFS, A.T. administratively transferred','rgb(168,168,0)'],['FEDERAL LAND - USFWS','US Fish and Wildlife Service','rgb(0,168,132)'],['FEDERAL LAND - OTHER','Other federal','rgb(255,170,0)'],
@@ -3078,7 +3087,7 @@ Object.assign(GLYPH, {
   osmcem:'<path d="M6.6 2.4h2.8v3h3v2.8h-3V14H6.6V8.2h-3V5.4h3z" fill="#fff"/>',
   nrhp:'<path d="M2 6 8 2.6 14 6z" fill="#fff"/><path d="M3.6 7.2v4.6M6.5 7.2v4.6M9.5 7.2v4.6M12.4 7.2v4.6" stroke="#fff" stroke-width="1.5"/><path d="M2.2 13h11.6" stroke="#fff" stroke-width="1.6"/>'});
 const glyphHTML = (l, size) => `<span class="fic" style="background:${l.color};color:${l.color};width:${size}px;height:${size}px"><svg viewBox="0 0 16 16" width="${Math.round(size * .68)}" height="${Math.round(size * .68)}" aria-hidden="true">${GLYPH[l.id] || ''}</svg></span>`;
-LIVE.forEach(l => { l.on = false; l.group = L.layerGroup(); l.status = ''; l.loaded = false; l.req = 0; });
+LIVE.forEach(l => { l.on = false; l.ov = null; l.marks = []; l.feats = []; l.lines = []; l.status = ''; l.loaded = false; l.req = 0; });
 async function arcQuery(url, params, maxPages){ let out = [], off = 0; const seen = new Set();
   for (let pg = 0; pg < (maxPages || 15); pg++){ const u = url + '/query?' + new URLSearchParams(Object.assign({where:'1=1', outSR:4326, f:'geojson', resultOffset:off, resultRecordCount:2000}, params));
     const r = await fetch(u); if (!r.ok) throw new Error('HTTP ' + r.status); const j = await r.json(); if (j.error) throw new Error(j.error.message || 'service error');
@@ -3110,19 +3119,44 @@ function featPopup(l, p){ const kind = ({mland:'Maintained landscape', lands:'Ad
     if (first >= 0) h += `<a class="pthumb" href="${esc(ph[first])}" target="_blank" rel="noopener" title="Open the full photo"><img src="https://drive.google.com/thumbnail?id=${did(ph[first])}&sz=w480" alt="Photo of ${esc(nm || 'this vista')}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></a>`;
     if (ph.length) h += '<div class="pbtns">' + ph.map((u, k) => `<a class="pbtn" href="${esc(u)}" target="_blank" rel="noopener">${ph.length === 1 ? 'View photo' : 'Photo ' + (k + 1)}</a>`).join('') + '</div>'; }
   return h; }
-const featOpen = (l, p, latlng, offset) => L.popup(Object.assign({autoPan:false, maxWidth:260}, offset && {offset})).setLatLng(latlng).setContent(featPopup(l, p || {})).openOn(map);
+/* one popup at a time, kept clear of the controls over the map */
+let POP = null;
+function popOpen(ll, html, o){ o = o || {}; if (POP) POP.remove();
+  POP = new maplibregl.Popup({maxWidth:(o.maxWidth || 260) + 'px', offset:o.offset || 8, className:o.className || '', focusAfterOpen:false})
+    .setLngLat(G.ll(ll).toLngLat()).setHTML(html).addTo(map.ml);
+  const me = POP; me.on('close', () => { if (POP === me) POP = null; }); setTimeout(() => { if (POP === me) keepClear(me.getElement()); }, 40); return me; }
+const featOpen = (l, p, latlng, offset) => popOpen(latlng, featPopup(l, p || {}), {offset});
 function liveStatus(l, s){ l.status = s; const e = document.querySelector('#layerspanel [data-st="' + l.id + '"]'); if (e) e.textContent = s; }
 const ICONZ = 9;
-function liveDraw(l, feats){ l.group.clearLayers();
-  if (l.type === 'pt'){ if (feats) l.feats = feats.filter(f => f.geometry && f.geometry.type === 'Point'); const z = map.getZoom(), b = map.getBounds().pad(.15), isz = Math.round(Math.min(34, Math.max(16, 16 + (z - ICONZ) * 3.5))); let n = 0;
-    (l.feats || []).forEach(f => { const c = f.geometry.coordinates, ll = [c[1], c[0]]; let mk;
-      if (z >= ICONZ){ if (!b.contains(ll) || n >= 700) return; n++; mk = L.marker(ll, {pane:'feat', keyboard:false, title:featName(l, f.properties || {}), icon:L.divIcon({className:'ficm', html:glyphHTML(l, isz), iconSize:[isz, isz], iconAnchor:[isz / 2, isz / 2]})}); }
-      else mk = L.circleMarker(ll, {renderer:featR, pane:'feat', radius:Math.max(2.5, Math.min(5, z * .55 - .5)), color:'#fff', weight:1, fillColor:l.color, fillOpacity:1, bubblingMouseEvents:false});
-      mk.on('click', () => featOpen(l, f.properties, mk.getLatLng(), [0, -6])).addTo(l.group); mk._p = f.properties || {}; mk._nm = featName(l, mk._p); }); }
-  else L.geoJSON({type:'FeatureCollection', features:feats.filter(f => f.geometry)}, {renderer:l.type === 'poly' ? landsR : featR, pane:l.type === 'poly' ? 'lands' : 'feat', bubblingMouseEvents:false,
-    style:f => l.id === 'mland' ? {color:MLCOL[(f.properties || {}).Type] || '#B5A33A', weight:1.8, fillColor:MLCOL[(f.properties || {}).Type] || '#B5A33A', fillOpacity:.45} : l.type === 'poly' ? {color:'#4A4A4A', weight:.6, fillColor:(LANDMAP.get((f.properties || {}).LEGEND3) || [0, 0, '#BBBBBB'])[2], fillOpacity:.5} : {color:l.color, weight:2.2, dashArray:'6 4', opacity:.95},
-    onEachFeature:(f, ly) => { if (l.type === 'line') ly._nm = featName(l, f.properties || {}); return ly.on('click', e => featOpen(l, f.properties, e.latlng)); }}).addTo(l.group);
-  labelSync(l); }
+/* Each layer is one GeoJSON source (G.Overlay). Points: small circles below ICONZ; from ICONZ in, the round icons as map markers
+   (those in view, at most 700), sized to the zoom and redrawn as the map moves. Lines and areas: MapLibre line and fill layers. */
+const ptRadius = ['interpolate', ['linear'], ['zoom'], 4.45 - 1, 2.5, 9 - 1, 5];   /* Leaflet: 0.55 * zoom - 0.5, between 2.5 and 5 */
+function liveOv(l){ if (l.ov) return l.ov;
+  const lay = l.type === 'pt' ? [{type:'circle', maxzoom:ICONZ - 1, paint:{'circle-radius':ptRadius, 'circle-color':l.color, 'circle-stroke-color':'#fff', 'circle-stroke-width':1}}]
+    : l.type === 'line' ? [{type:'line', paint:{'line-color':l.color, 'line-width':2.2, 'line-opacity':.95, 'line-dasharray':[6 / 2.2, 4 / 2.2]}}]
+    : [{type:'fill', paint:{'fill-color':['get', '_fc'], 'fill-opacity':['get', '_fo']}}, {type:'line', paint:{'line-color':['get', '_lc'], 'line-width':['get', '_lw']}}];
+  return l.ov = new G.Overlay(map, 'live-' + l.id, l.type === 'poly' ? 'lands' : 'feat', lay); }
+function liveMarks(l){ l.marks.forEach(m => m.remove()); l.marks = []; }
+function liveClear(l){ if (l.ov) l.ov.clear(); liveMarks(l); l.feats = []; l.lines = []; }
+/* the middle of a line by length (its first part), and its extent: for the name labels */
+function lineMid(g){ const part = g.type === 'MultiLineString' ? g.coordinates[0] : g.coordinates; if (!part || !part.length) return null;
+  let tot = 0; const d = []; for (let i = 1; i < part.length; i++){ const x = Math.hypot(part[i][0] - part[i-1][0], part[i][1] - part[i-1][1]); d.push(x); tot += x; }
+  let h = tot / 2; for (let i = 1; i < part.length; i++){ if (h <= d[i-1]){ const t = d[i-1] ? h / d[i-1] : 0; return G.ll(part[i-1][1] + (part[i][1] - part[i-1][1]) * t, part[i-1][0] + (part[i][0] - part[i-1][0]) * t); } h -= d[i-1]; }
+  return G.ll(part[0][1], part[0][0]); }
+function liveDraw(l, feats){ const ov = liveOv(l); liveMarks(l);
+  if (l.type === 'pt'){ if (feats){ l.feats = feats.filter(f => f.geometry && f.geometry.type === 'Point'); l.feats.forEach(f => { f._nm = featName(l, f.properties || {}); }); ov.set({type:'FeatureCollection', features:l.feats}); }
+    const z = map.getZoom(), b = map.getBounds().pad(.15), isz = Math.round(Math.min(34, Math.max(16, 16 + (z - ICONZ) * 3.5))); let n = 0;
+    if (l.on && z >= ICONZ) for (const f of l.feats){ const c = f.geometry.coordinates; if (!b.contains([c[1], c[0]])) continue; if (n >= 700) break; n++;
+      const el = document.createElement('div'); el.className = 'ficm'; el.innerHTML = glyphHTML(l, isz); if (f._nm) el.title = f._nm;
+      l.marks.push(new maplibregl.Marker({element:el}).setLngLat(c).addTo(map.ml)); } }
+  else { const fs = (feats || []).filter(f => f.geometry).map(f => { const p = Object.assign({}, f.properties || {});
+      if (l.id === 'mland'){ const c = MLCOL[p.Type] || '#B5A33A'; Object.assign(p, {_fc:c, _fo:.45, _lc:c, _lw:1.8}); }
+      else if (l.type === 'poly') Object.assign(p, {_fc:(LANDMAP.get(p.LEGEND3) || [0, 0, '#BBBBBB'])[2], _fo:.5, _lc:'#4A4A4A', _lw:.6});
+      return {type:'Feature', properties:p, geometry:f.geometry}; });
+    ov.set({type:'FeatureCollection', features:fs});
+    l.lines = l.type !== 'line' ? [] : fs.map(f => { const nm = featName(l, f.properties), c = nm && lineMid(f.geometry);
+      return c ? {nm, c, b:G.bounds(G.coords(f.geometry))} : null; }).filter(Boolean); }
+  ov.show(l.on); labelSync(l); }
 /* Keep a popup or the pinned value label clear of everything that sits on top of the map: the cell-size, Map tools, basemap and Map layers controls,
    the zoom buttons, an open layers list, the legend, and the details panel. The map is nudged just far enough to clear them. */
 function keepClear(el){ if (!el || !el.getBoundingClientRect) return; const m = $('#map').getBoundingClientRect(), r = el.getBoundingClientRect(); if (!r.width) return;
@@ -3137,17 +3171,15 @@ function keepClear(el){ if (!el || !el.getBoundingClientRect) return; const m = 
     const moves = [[q.right + g - r.left, sy], [q.left - g - r.right, sy], [sx, q.bottom + g - r.top], [sx, q.top - g - r.bottom]].filter(v => fits(v[0], v[1])).sort((a, b) => (Math.abs(a[0] - sx) + Math.abs(a[1] - sy)) - (Math.abs(b[0] - sx) + Math.abs(b[1] - sy)));
     const free = moves.find(v => !clash(v[0], v[1])) || moves[0]; if (!free) break; sx = free[0]; sy = free[1]; }
   if (Math.abs(sx) > 1 || Math.abs(sy) > 1) map.panBy([-sx, -sy], {animate:true, duration:.25}); }
-map.on('popupopen', e => setTimeout(() => keepClear(e.popup.getElement()), 40));
 /* A click on the map goes to a feature of a switched-on layer when one is under it (points within a fingertip, then side trails, then administrative areas). Only otherwise does it select a grid cell. */
 function liveHit(latlng){ const cp = map.latLngToContainerPoint(latlng), tol = TOUCHDEV ? 20 : 11; let best = null, bd = Infinity, bl = null;
-  const open = (l, p) => { featOpen(l, p, latlng); return true; };
-  LIVE.forEach(l => { if (!l.on || l.type !== 'pt') return; l.group.eachLayer(m => { if (!m.getLatLng) return; const d = map.latLngToContainerPoint(m.getLatLng()).distanceTo(cp); if (d <= tol && d < bd){ bd = d; best = m; bl = l; } }); });
-  if (best) return open(bl, best._p || {});
-  const lp = map.latLngToLayerPoint(latlng);
-  for (const l of LIVE){ if (!l.on || l.type !== 'line') continue; let hit = null; l.group.eachLayer(g => { if (g.eachLayer) g.eachLayer(ly => { if (!hit && ly.closestLayerPoint){ const c = ly.closestLayerPoint(lp); if (c && c.distance <= tol) hit = ly; } }); }); if (hit) return open(l, hit.feature ? hit.feature.properties || {} : {}); }
-  for (const l of LIVE){ if (!l.on || l.type !== 'poly') continue; let hit = null; const inside = (ring) => { let c = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++){ const a = ring[i], b = ring[j]; if (((a.lat > latlng.lat) !== (b.lat > latlng.lat)) && (latlng.lng < (b.lng - a.lng) * (latlng.lat - a.lat) / (b.lat - a.lat) + a.lng)) c = !c; } return c; };
-    const polyHit = ll => Array.isArray(ll[0]) && Array.isArray(ll[0][0]) ? ll.some(polyHit) : (Array.isArray(ll[0]) ? (inside(ll[0]) && !ll.slice(1).some(inside)) : inside(ll));
-    l.group.eachLayer(g => { if (g.eachLayer) g.eachLayer(ly => { if (!hit && ly.getLatLngs && ly.getBounds().contains(latlng) && polyHit(ly.getLatLngs())) hit = ly; }); }); if (hit) return open(l, hit.feature ? hit.feature.properties || {} : {}); }
+  const open = (l, p) => { featOpen(l, p, latlng); return true; }, b = map.getBounds().pad(.1);
+  LIVE.forEach(l => { if (!l.on || l.type !== 'pt') return; l.feats.forEach(f => { const c = f.geometry.coordinates; if (!b.contains([c[1], c[0]])) return;
+    const d = map.latLngToContainerPoint([c[1], c[0]]).distanceTo(cp); if (d <= tol && d < bd){ bd = d; best = f; bl = l; } }); });
+  if (best) return open(bl, best.properties || {});
+  const q = (l, box) => l.ov && map.hasLayer(l.ov.ids[0]) ? map.ml.queryRenderedFeatures(box, {layers:[l.ov.ids[0]]})[0] : null;
+  for (const l of LIVE){ if (!l.on || l.type !== 'line') continue; const f = q(l, [[cp.x - tol, cp.y - tol], [cp.x + tol, cp.y + tol]]); if (f) return open(l, f.properties || {}); }
+  for (const l of LIVE){ if (!l.on || l.type !== 'poly') continue; const f = q(l, [cp.x, cp.y]); if (f) return open(l, f.properties || {}); }
   return false; }
 map.on('click', e => { if (S.drawing || Date.now() - S.boxAt < 450) return; if (liveHit(e.latlng) || segHit(e.latlng)) return;
   const hit = cellAt(e.containerPoint); if (!hit) return; const [lv, c] = hit;
@@ -3157,21 +3189,23 @@ const LABELZ = 11;
 /* One pass places every name label for all switched-on layers together, so none overlap:
    each side trail gets a single label however many segments it has, a label never covers another feature's icon,
    and a label that cannot be placed clear of the others (right, left, above, below) is left out until you zoom in. */
-const LABELS = L.layerGroup().addTo(map); let labT = 0;
+let LABELS = [], labT = 0;
 function labelSync(){ cancelAnimationFrame(labT); labT = requestAnimationFrame(labelAll); }
-function labelAll(){ LABELS.clearLayers(); if (map.getZoom() < LABELZ) return; const b = map.getBounds().pad(.05), ctr = map.latLngToContainerPoint(map.getCenter()), cand = [], taken = [];
+function labelAll(){ LABELS.forEach(m => m.remove()); LABELS = []; if (map.getZoom() < LABELZ) return; const b = map.getBounds().pad(.05), ctr = map.latLngToContainerPoint(map.getCenter()), cand = [], taken = [];
   LIVE.forEach((l, li) => { if (!l.on) return;
-    if (l.type === 'pt') l.group.eachLayer(m => { if (!m.getLatLng) return; const ll = m.getLatLng(); if (!b.contains(ll)) return; const p = map.latLngToContainerPoint(ll); taken.push([p.x - 12, p.y - 12, p.x + 12, p.y + 12]); if (m._nm) cand.push({nm:m._nm, ll, p, r:13, pri:li}); });
+    if (l.type === 'pt') l.feats.forEach(f => { const c = f.geometry.coordinates, ll = G.ll(c[1], c[0]); if (!b.contains(ll)) return; const p = map.latLngToContainerPoint(ll); taken.push([p.x - 12, p.y - 12, p.x + 12, p.y + 12]); if (f._nm) cand.push({nm:f._nm, ll, p, r:13, pri:li}); });
     else if (l.type === 'line'){ const by = new Map(); /* trail name -> the segment in view nearest the middle of the screen */
-      l.group.eachLayer(g => { if (g.eachLayer) g.eachLayer(ly => { if (!ly._nm || !ly.getBounds || !ly.getBounds().intersects(b)) return; let ll; try { ll = ly.getCenter(); } catch (e){ ll = ly.getBounds().getCenter(); } if (!b.contains(ll)) return;
-        const p = map.latLngToContainerPoint(ll), d = p.distanceTo(ctr), cur = by.get(ly._nm); if (!cur || d < cur.d) by.set(ly._nm, {nm:ly._nm, ll, p, r:5, pri:li + 100, d}); }); });
+      l.lines.forEach(ly => { if (!ly.b.intersects(b) || !b.contains(ly.c)) return;
+        const p = map.latLngToContainerPoint(ly.c), d = p.distanceTo(ctr), cur = by.get(ly.nm); if (!cur || d < cur.d) by.set(ly.nm, {nm:ly.nm, ll:ly.c, p, r:5, pri:li + 100, d}); });
       by.forEach(v => cand.push(v)); } });
   cand.sort((a, c) => a.pri - c.pri || a.p.y - c.p.y || a.p.x - c.p.x);
   const hit = bx => taken.some(t => bx[0] < t[2] && bx[2] > t[0] && bx[1] < t[3] && bx[3] > t[1]); let n = 0;
   for (const c of cand){ if (n >= 120) break; const w = Math.min(230, c.nm.length * 6.1 + 14), h = 18, x = c.p.x, y = c.p.y, g = c.r + 2;
     const opts = [['right', [x + g, y - h/2, x + g + w, y + h/2], [g - 6, 0]], ['left', [x - g - w, y - h/2, x - g, y + h/2], [-(g - 6), 0]], ['top', [x - w/2, y - g - h, x + w/2, y - g], [0, -(g - 6)]], ['bottom', [x - w/2, y + g, x + w/2, y + g + h], [0, g - 6]]];
     const o = opts.find(o => !hit(o[1])); if (!o) continue; taken.push(o[1]); n++;
-    LABELS.addLayer(L.tooltip({permanent:true, direction:o[0], offset:o[2], className:'featlab', interactive:false, opacity:1}).setLatLng(c.ll).setContent(esc(c.nm))); } }
+    const el = document.createElement('div'); el.className = 'featlab'; el.textContent = c.nm;
+    const at = {right:['left', [g, 0]], left:['right', [-g, 0]], top:['bottom', [0, -g]], bottom:['top', [0, g]]}[o[0]];
+    LABELS.push(new maplibregl.Marker({element:el, anchor:at[0], offset:at[1]}).setLngLat(c.ll.toLngLat()).addTo(map.ml)); } }
 map.on('moveend zoomend', () => labelSync());
 const FEATLIVE = [['shelters', 'Shelter'], ['campsites', 'Campsite'], ['privies', 'Privy'], ['parking', 'Parking'], ['bridges', 'Bridge'], ['vistas', 'Vista']];
 let FEATGOT = null, FEATDONE = false, FEATRUN = false, FEATAT = null;
@@ -3352,13 +3386,13 @@ document.addEventListener('change', e => { if (e.target.id === 'acqyr') side(); 
 async function liveLoad(l){ if (!l.on) return; const my = ++l.req, z = map.getZoom(); if (l.local) return histLayer(l, my);
   if (l.file){ if (!l.loaded){ liveStatus(l, 'Loading…'); try { const j = await (await fetch(l.file)).json(); if (my !== l.req) return; liveDraw(l, j.features); l.loaded = true; liveStatus(l, fmt(j.features.length, 0) + ' meadows, fields, farm fields and balds'); } catch (e){ liveStatus(l, 'Could not load this layer just now'); } } return; }
   try {
-    if (l.bbox){ if (z < l.minZoom){ l.group.clearLayers(); liveStatus(l, 'Zoom in to see these'); return; }
+    if (l.bbox){ if (z < l.minZoom){ liveClear(l); labelSync(); liveStatus(l, 'Zoom in to see these'); return; }
       liveStatus(l, 'Loading…'); const b = map.getBounds().pad(.15), px = (b.getEast() - b.getWest()) / (map.getSize().x * 1.3); await arcMeta(l);
       const f = await arcQuery(l.url, {geometry:[b.getWest(), b.getSouth(), b.getEast(), b.getNorth()].join(','), geometryType:'esriGeometryEnvelope', inSR:4326, spatialRel:'esriSpatialRelIntersects', outFields:l.fields || '*', maxAllowableOffset:px.toFixed(7), geometryPrecision:6}, 3);
       if (my !== l.req) return; liveDraw(l, f); liveStatus(l, f.length ? fmt(f.length, 0) + ' in view' + (l.id === 'lands' ? '. Click an area for its details. Switch this layer off to select grid cells here.' : '') : 'None in view'); return; }
     if (!l.loaded){ liveStatus(l, 'Loading…'); const [f] = await Promise.all([arcQuery(l.url, {outFields:'*', geometryPrecision:6}), arcMeta(l)]); if (my !== l.req) return; liveDraw(l, f); l.loaded = true; liveStatus(l, fmt(f.length, 0) + ' along the trail'); }
   } catch (e){ if (my === l.req) liveStatus(l, 'Could not load this layer just now'); } }
-function liveToggle(l, on){ l.on = on; if (on){ l.group.addTo(map); liveLoad(l); if (l.type === 'pt' && l.loaded) liveDraw(l); } else { map.removeLayer(l.group); l.req++; liveStatus(l, ''); } labelSync(); layersUI(); writeHash(); }
+function liveToggle(l, on){ l.on = on; if (on){ liveOv(l).show(true); liveLoad(l); if (l.type === 'pt' && l.loaded) liveDraw(l); } else { if (l.ov) l.ov.show(false); liveMarks(l); l.req++; liveStatus(l, ''); } labelSync(); layersUI(); writeHash(); }
 function layersUI(){ const n = LIVE.filter(l => l.on).length; $('#layerstog span').innerHTML = (document.body.classList.contains('stackui') ? 'Layers' : 'Map layers') + (n ? ` <b>${n}</b>` : '');
   const lk = $('#landkey'); if (lk) lk.hidden = !LIVE.find(l => l.id === 'lands').on; const mk = $('#mlkey'); if (mk) mk.hidden = !LIVE.find(l => l.id === 'mland').on; }
 $('#layerspanel').innerHTML = `<label><input type="checkbox" id="stlines"${stOn ? ' checked' : ''}><i class="ln" style="background:#C4A57C;justify-self:center"></i><span>State lines</span><span class="st"></span></label>` + LIVE.map(l => `<label><input type="checkbox" data-live="${l.id}">${l.type === 'pt' ? glyphHTML(l, 18) : `<i class="${l.type === 'poly' ? 'sq' : 'ln'}" style="background:${l.color};justify-self:center"></i>`}<span>${l.name}</span><span class="st" data-st="${l.id}"></span></label>` +
@@ -3368,9 +3402,9 @@ $('#layerspanel').addEventListener('change', e => { const l = LIVE.find(x => x.i
 $('#layerstog').onclick = () => { const p = $('#layerspanel'); p.hidden = !p.hidden; $('#layerstog').setAttribute('aria-expanded', !p.hidden); };
 { let lt; map.on('moveend', () => { clearTimeout(lt); lt = setTimeout(() => LIVE.forEach(l => { if (!l.on) return; if (l.bbox) liveLoad(l); else if (l.type === 'pt' && l.loaded){ liveDraw(l); } else labelSync(l); }), 350); }); }
 /* squared distance, in rough degrees, from a point to the trail line the page is drawing */
-function trailDist(la, lo){ const k = Math.cos(la * Math.PI / 180), lines = trailLine.getLatLngs(); let best = Infinity;
-  const seg = (a, b) => { const ax = (a.lng - lo) * k, ay = a.lat - la, bx = (b.lng - lo) * k, by = b.lat - la, dx = bx - ax, dy = by - ay, L2 = dx*dx + dy*dy; let u = L2 ? -(ax*dx + ay*dy) / L2 : 0; u = u < 0 ? 0 : u > 1 ? 1 : u; const x = ax + u*dx, y = ay + u*dy; return x*x + y*y; };
-  const walk = arr => { if (!arr.length) return; if (Array.isArray(arr[0])){ arr.forEach(walk); return; } for (let i = 1; i < arr.length; i++){ if (Math.abs(arr[i].lat - la) > .3 && Math.abs(arr[i-1].lat - la) > .3) continue; const d = seg(arr[i-1], arr[i]); if (d < best) best = d; } };
+function trailDist(la, lo){ const k = Math.cos(la * Math.PI / 180), lines = TRAIL.lines; let best = Infinity;
+  const seg = (a, b) => { const ax = (a[1] - lo) * k, ay = a[0] - la, bx = (b[1] - lo) * k, by = b[0] - la, dx = bx - ax, dy = by - ay, L2 = dx*dx + dy*dy; let u = L2 ? -(ax*dx + ay*dy) / L2 : 0; u = u < 0 ? 0 : u > 1 ? 1 : u; const x = ax + u*dx, y = ay + u*dy; return x*x + y*y; };
+  const walk = arr => { if (!arr.length) return; if (Array.isArray(arr[0][0])){ arr.forEach(walk); return; } for (let i = 1; i < arr.length; i++){ if (Math.abs(arr[i][0] - la) > .3 && Math.abs(arr[i-1][0] - la) > .3) continue; const d = seg(arr[i-1], arr[i]); if (d < best) best = d; } };
   walk(lines); return best; }
 let MILEP = null;
 function milePts(){ if (!MILEP) MILEP = arcQuery(SVC + 'MilePointsFromSpringer/FeatureServer/0', {outFields:'MileNumber', geometryPrecision:5}).then(f => {
@@ -3400,11 +3434,10 @@ if (USE_MILE_MARKERS) milePts().then(alignMiles).catch(() => {});
 /* the trail line itself: refreshed from the official centerline service, keeping the built-in line if that fails */
 arcQuery(SVC + 'ANST_Centerline/FeatureServer/0', {outFields:'OBJECTID', maxAllowableOffset:'0.0003', geometryPrecision:5}).then(f => { const lines = [];
   f.forEach(x => { const g = x.geometry; if (!g) return; (g.type === 'MultiLineString' ? g.coordinates : [g.coordinates]).forEach(c => { if (c.length > 1) lines.push(c.map(p => [p[1], p[0]])); }); });
-  if (lines.length > 500){ trailCase.setLatLngs(lines); trailLine.setLatLngs(lines); S.trailLive = true; } }).catch(() => {});
+  if (lines.length > 500){ TRAIL.set(lines); S.trailLive = true; } }).catch(() => {});
 /* detailed trail line: fetched by 0.25° tiles as the map moves, simplified to about 2 m; a tile that fails leaves the generalized line showing */
 const HIZ = 12, HIT = .25, HIC = new Map();
-const trailCaseHi = L.polyline([], {renderer:trailR, color:'#fff', weight:4.6, opacity:.9, interactive:false}).addTo(map);
-const trailLineHi = L.polyline([], {renderer:trailR, color:'#14294A', weight:2.2, interactive:false}).addTo(map);
+const trailHiOv = new G.Overlay(map, 'trailhi', 'trail', trailLayers());
 let hiKey = '', hiTimer = 0;
 function hiTile(tx, ty){ const k = tx + ',' + ty; if (HIC.has(k)) return HIC.get(k);
   const w = tx * HIT, s = ty * HIT, p = arcQuery(SVC + 'ANST_Centerline/FeatureServer/0', {outFields:'OBJECTID', geometry:[w, s, w + HIT, s + HIT].join(','), geometryType:'esriGeometryEnvelope', inSR:4326, spatialRel:'esriSpatialRelIntersects', maxAllowableOffset:'0.00002', geometryPrecision:6}, 5)
@@ -3412,16 +3445,16 @@ function hiTile(tx, ty){ const k = tx + ',' + ty; if (HIC.has(k)) return HIC.get
     .catch(() => { HIC.delete(k); return null; });
   HIC.set(k, p); return p; }
 function trailHi(){ clearTimeout(hiTimer); hiTimer = setTimeout(async () => {
-  const z = map.getZoom(); if (z < HIZ){ if (hiKey){ hiKey = ''; trailCaseHi.setLatLngs([]); trailLineHi.setLatLngs([]); trailStyle(); } return; }
+  const z = map.getZoom(); if (z < HIZ){ if (hiKey){ hiKey = ''; trailHiOv.clear(); trailStyle(); } return; }
   const b = map.getBounds().pad(.2), x0 = Math.floor(b.getWest() / HIT), x1 = Math.floor(b.getEast() / HIT), y0 = Math.floor(b.getSouth() / HIT), y1 = Math.floor(b.getNorth() / HIT);
   const key = [x0, x1, y0, y1].join('|'); if (key === hiKey) return; const tiles = [];
   for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) tiles.push(hiTile(x, y));
   const got = await Promise.all(tiles); if (map.getZoom() < HIZ) return;
   if (got.some(t => t == null) || !got.some(t => t.length)){ hiKey = ''; trailStyle(); return; }    /* keep the generalized line if any tile failed */
-  hiKey = key; const lines = [].concat(...got); trailCaseHi.setLatLngs(lines); trailLineHi.setLatLngs(lines); trailStyle(); }, 250); }
-{ const t0 = trailStyle; trailStyle = function(){ t0(); const on = !!hiKey && map.getZoom() >= HIZ, dk = DARKBASE[S.base];
-  trailCaseHi.setStyle({color: dk ? '#14294A' : '#fff', opacity: on ? .9 : 0}); trailLineHi.setStyle({color: dk ? '#fff' : '#14294A', opacity: on ? 1 : 0});
-  if (on){ trailCase.setStyle({opacity:0}); trailLine.setStyle({opacity:0}); } }; }
+  hiKey = key; const lines = [].concat(...got); trailHiOv.set(G.lines(lines)); trailStyle(); }, 250); }
+/* zoomed in with the detailed line loaded, it is drawn (at full width) in place of the generalized one */
+{ const t0 = trailStyle; trailStyle = function(){ t0(); const on = !!hiKey && map.getZoom() >= HIZ, s = trailLook();
+  trailPaint(trailHiOv, [s[0], 4.6, .9, s[3], 2.2, 1], on ? 1 : 0); if (on) trailPaint(trailOv, s, 0); }; }
 map.on('moveend zoomend', trailHi); trailHi();
 
 /* ---------- phone gestures ----------
@@ -4392,14 +4425,14 @@ function tourGo(k){ const T = TOURS[TOUR.id]; if (!T) return;  TOUR.k = Math.max
   tourSitesDraw(TOURS[TOUR.id], st); tourDraw(lv, cells);
   if (ph) map.invalidateSize();
   let bd = null; if (cells.length){ bd = G.bounds([]); cells.forEach(c => ring(lv, c).forEach(p => bd.extend(p))); bd = bd.pad(st.pick.top ? .05 : .6); }
-  else if (st.view === 'trail') bd = trailLine.getBounds(); else if (Array.isArray(st.view)) bd = G.bounds(st.view);
+  else if (st.view === 'trail') bd = TRAIL.bounds(); else if (Array.isArray(st.view)) bd = G.bounds(st.view);
   if (ph){ map.stop(); if (st.zoom && cells.length) map.setView(st.pick.near, st.zoom, {animate:false}); else if (bd) map.fitBounds(bd, {animate:false, maxZoom:12}); }
   else { /* a wide map view sits in the middle of the map; it slides east only on a window too narrow to keep the trail
              clear of the tour panel, by about the width the trail would otherwise be hidden by */
     let pl = 0; if (Array.isArray(st.view) && !cells.length){ const tr = $('#tour'), mw = $('#mapwrap');
-      if (tr && mw && typeof trailLine !== 'undefined' && trailLine && bd){ const r1 = tr.getBoundingClientRect(), r0 = mw.getBoundingClientRect();
+      if (tr && mw && bd){ const r1 = tr.getBoundingClientRect(), r0 = mw.getBoundingClientRect();
         const z = map.getBoundsZoom(bd, false), mid = bd.getCenter();
-        const x = map.getSize().x / 2 + map.project(G.ll(mid.lat, trailLine.getBounds().getWest()), z).x - map.project(mid, z).x;
+        const x = map.getSize().x / 2 + map.project(G.ll(mid.lat, TRAIL.bounds().getWest()), z).x - map.project(mid, z).x;
         pl = Math.max(0, Math.min(2 * (r1.right - r0.left + 16 - x), r0.width * .55)); } }
     if (bd) map.flyToBounds(bd, {duration:1.2, maxZoom:12, paddingTopLeft:[pl, 0]}); if (st.zoom && cells.length) setTimeout(() => { if (TOUR.id) map.flyTo(st.pick.near, st.zoom, {duration:.8}); }, 1300); }
   if (ph) tourScroll(); }

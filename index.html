@@ -312,8 +312,9 @@ button.tvapply:disabled{background:none;color:#8A97A6;border-color:#4A6182;curso
 .ficm{background:none !important;border:0 !important}
 #layerspanel label .fic{border-width:1px;box-shadow:none}
 .featlab{max-width:230px;overflow:hidden;text-overflow:ellipsis;background:none;color:#fff;border:0;border-radius:0;padding:1px 3px;font-size:13px;font-weight:600;letter-spacing:.01em;box-shadow:none;white-space:nowrap;-webkit-text-stroke:3px rgba(12,14,16,.92);paint-order:stroke fill;text-shadow:0 0 3px rgba(12,14,16,.9)}
-.featlab::before{display:none}
 .featlab{pointer-events:none}
+/* over the map: name labels above the icons, popups above both (MapLibre stacks them in the order they were added) */
+.maplibregl-marker:has(.fic){cursor:pointer}.maplibregl-marker.featlab{z-index:1}.tip.pin{z-index:2}.maplibregl-popup:not(.tip){z-index:3}.tip:not(.pin){z-index:4}
 .maplibregl-popup-content .ty{font-size:13px;color:#A8B8CA;margin-bottom:4px}
 .maplibregl-popup-close-button{color:#C2CEDB;font-size:18px;padding:0 6px}
 .tip .maplibregl-popup-content{background:#0B1525;color:#fff;border:1px solid #33465F;border-radius:4px;padding:5px 8px;font-size:13.5px;line-height:1.35;box-shadow:none;font-family:var(--body);white-space:nowrap}

@@ -281,6 +281,10 @@ class Overlay {
 /* [lat, lng] rings (one ring, or a list of them) as a GeoJSON polygon outline */
 G.polys = rings => { if (!rings || !rings.length) return null; const list = Array.isArray(rings[0][0]) ? rings : [rings];
   return {type:'FeatureCollection', features:list.filter(r => r && r.length).map(r => ({type:'Feature', properties:{}, geometry:{type:'Polygon', coordinates:[G.ring(Array.isArray(r[0][0]) ? r[0] : r)]}}))}; };
+/* [lat, lng] lines (a list of them) as one GeoJSON MultiLineString */
+G.lines = lines => ({type:'FeatureCollection', features:lines && lines.length ? [{type:'Feature', properties:{}, geometry:{type:'MultiLineString', coordinates:lines.map(l => l.map(p => [p[1], p[0]]))}}] : []});
+/* every position of a GeoJSON geometry, as [lat, lng] */
+G.coords = g => { const out = [], walk = a => { if (typeof a[0] === 'number') out.push([a[1], a[0]]); else a.forEach(walk); }; if (g && g.coordinates) walk(g.coordinates); return out; };
 G.Overlay = Overlay; G.empty = EMPTY;
 
 /* a circle as a GeoJSON polygon (for the accuracy ring around your location) */
