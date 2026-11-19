@@ -33,6 +33,4 @@ All data stays in AT-Resource-Grid and is rebuilt there by its workflows. This s
 
 1. **Cells and basemaps** (done): cells at all three sizes, hover and pinned labels, clicking a cell to select it, the selection outline, the HUC10 watershed cells with corridor outlines, state lines, all basemaps with the tile queue, your location, offline imagery.
 2. **Trail and facility layers** (done): the A.T. centerline (the grid file's line, replaced by the official centerline, and the detailed line by tiles from zoom 12), shelters, campsites, parking, privies, bridges, vistas, side trails, administrative areas, maintained landscapes, National Register and cemetery points, their name labels and popups, and the 500-foot trail segments.
-3. **Everything else**: box selection, guided tours, the elevation profile, phenology dots, search markers.
-
-Until stage 3, map code not yet ported still calls Leaflet through a stand-in in app.js that does nothing (marked PARKED).
+3. **Everything else** (done): box selection and picking cells, guided tours with their site stars and labels, phenology dots week by week, the search markers (the place found, a tract's outline). Leaflet is gone from the code.
