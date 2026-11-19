@@ -1,57 +1,38 @@
-# A.T. Resource Grid
+# A.T. Resource Grid on MapLibre
 
-**[grid.trailassessment.org](https://grid.trailassessment.org)** An interactive dashboard of natural and cultural resources along the Appalachian National Scenic Trail, summarized on a grid of 1, 7 and 49 square mile cells (NatureServe hex, cog and wheel) for the A.T. corridor and the HUC10 watersheds around it.
-
-Built for the Appalachian National Scenic Trail to screen where to look more closely: restoration targets, invasive species and forest pests, birds, vegetation, geology, soils, wetlands, facilities, historic resources, visitation, land administration, weather and climate, and where the trail is most vulnerable to damage. Pick a question, a measure and a stretch of trail; select cells for their details and export them to CSV or Excel.
+**[atconservation.com](https://atconservation.com)** is a copy of the [A.T. Resource Grid](https://grid.trailassessment.org) dashboard ([Creese333/AT-Resource-Grid](https://github.com/Creese333/AT-Resource-Grid)), rebuilt on the [MapLibre GL JS](https://maplibre.org) map engine (version 5.24.0) in place of Leaflet.
 
 > The summaries are generalized to the grid and are for screening and planning. They are not site assessments, boundary determinations or a trail condition survey.
 
-## Automatic updates
+## Where the data comes from
 
-Each dataset is rebuilt by a GitHub Actions workflow, which commits the new file; the site picks it up. Run any of them by hand from the **Actions** tab ("Run workflow").
+All data stays in AT-Resource-Grid and is rebuilt there by its workflows. This site reads it from `https://grid.trailassessment.org/data/` (and the bird photos from `/images/birds/`); GitHub Pages allows those cross-site reads. Nothing here builds or stores data, so this repository has no build workflows, caches or secrets.
 
-| Workflow | Status | Builds | Runs |
-|---|---|---|---|
-| iNaturalist, eBird and EDDMapS | [![iNaturalist, eBird and EDDMapS](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/inat_ebird.yml/badge.svg)](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/inat_ebird.yml) | `data/inat_ebird.json`, `data/inat_ebird_huc10.json.gz` | Quarterly |
-| Phenology and forest pests | [![Phenology and forest pests](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/phenology.yml/badge.svg)](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/phenology.yml) | `data/phen/` | Weekly (Mondays) |
-| Historic resources | [![Historic resources](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/historic_resources.yml/badge.svg)](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/historic_resources.yml) | `data/historic_resources.json`, `data/place_names.json` | Monthly |
-| Place names | [![Place names](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/place_names.yml/badge.svg)](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/place_names.yml) | `data/place_names.json` | On demand |
-| Geology | [![Geology](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/geology.yml/badge.svg)](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/geology.yml) | `data/geology.json`, `data/geology_huc10.json` | Yearly (January) |
-| Weather | [![Weather](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/weather.yml/badge.svg)](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/weather.yml) | `data/weather.json`, `data/weather_huc10.json` | Yearly (January); storm events quarterly |
-| Trail slope | [![Trail slope](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/trailslope.yml/badge.svg)](https://github.com/Creese333/AT-Resource-Grid/actions/workflows/trailslope.yml) | `data/trail_slope.json`, `data/trail_slope_huc10.json` | Yearly (February) |
+## Files
 
-The vegetation, soils, wetlands, facilities, land administration and rare species summaries are built in ArcGIS Pro and stored in `index.html` and `data/soils_wetlands_huc10.json`.
-
-## Data sources
-
-| Topic | Source |
+| File | What it is |
 |---|---|
-| Species records | iNaturalist research-grade observations and the eBird Observation Dataset (via GBIF); EDDMapS |
-| Flowering and forest pests | iNaturalist (weekly); EDDMapS |
-| Vegetation | APPA vegetation map; NLCD |
-| Soils | NRCS gSSURGO |
-| Wetlands | USFWS National Wetlands Inventory |
-| Geology | USGS State Geologic Map Compilation; NPS Geologic Resources Inventory map footprints |
-| Historic resources | NPS National Register of Historic Places; cemeteries from OpenStreetMap |
-| Place names | USGS Geographic Names Information System |
-| Weather and climate | PRISM 1991–2020 normals (Oregon State University); NOAA nClimGrid-Daily, Atlas 14 and Storm Events; gridMET wind (University of Idaho, research data) |
-| Trail slope | A.T. centerline with USGS 3DEP elevation |
-| Land, facilities, rare species | NPS APPA and ATC data |
+| `index.html` | The page: layout, styles, the loading screen and the loader (grid data, MapLibre, the map, then the app) |
+| `atmap.js` | The map engine: the MapLibre map, basemaps, the basemap tile queue, drawing order, geometry helpers |
+| `app.js` | The dashboard: questions, measures, cells, legend, side panel, charts, selection, export |
+| `inat.js` | iNaturalist live lookup for a selected cell |
+| `sw.js` | Service worker: opens from saved copies, "A new version is ready", Save for offline |
+| `manifest.webmanifest`, `images/` | App icons, launch screens and tour photos |
+| `CNAME` | `atconservation.com` |
 
-Full citations, methods and caveats are under **About the data** on the dashboard.
+`data/`, `scripts/` and `.github/workflows/` hold only a note each, so the folders exist for uploads.
 
-## Repository layout
+## How the map works
 
-```
-index.html          the dashboard (GitHub Pages serves it at grid.trailassessment.org; see CNAME)
-data/               files the dashboard loads, written by the workflows
-  phen/             flowering and forest pest records, one file per species
-scripts/            the build scripts the workflows run (build_*.py)
-inputs/             tables kept by hand that the builds read: bird guilds, invasive and cultural plant lists,
-                    geologic map footprints; put at_centerline.zip here to override the trail line for Trail slope
-cache/              kept between runs so later builds can reuse them; the dashboard never loads these
-tools/              stand-alone helper pages (phenology checks)
-images/             screenshots for this page
-.github/workflows/  the scheduled builds
-```
-To run a build on your own computer, from the repository folder: `pip install geopandas pyogrio shapely pyproj rasterio xarray netCDF4`, then for example `python scripts/build_weather.py`. The iNaturalist and eBird build needs a GBIF account in the `GBIF_USER` and `GBIF_PWD` environment variables (repository secrets on GitHub).
+- **Zoom numbers.** app.js counts zoom the Leaflet way, one more than MapLibre's number at the same scale. `atmap.js` converts at the edge, so every threshold in app.js means what it did on the Leaflet dashboard.
+- **Layers** are added once the style is in (`style.load`), never on `load`, which waits for every first tile and never fires when a basemap service is down. The loader makes the map and starts app.js only after the style is in.
+- **Cells** are one GeoJSON source per cell size, colored through feature-state, so restyling never rebuilds geometry.
+- **Basemap tiles** go through the `atq://` protocol in atmap.js. Each service gets a few requests at a time; a failed tile is asked for again a little later each time; NAIP Plus falls back to plain NAIP. A tile that still failed is asked for again with `map.refreshTiles` 30 seconds later and when the connection comes back, so holes close themselves (MapLibre does not retry a failed raster tile on its own: maplibre-gl-js issue #8612). The sharp NAIP pictures are asked for only once the map stops moving.
+
+## Port status
+
+1. **Cells and basemaps** (done): cells at all three sizes, hover and pinned labels, clicking a cell to select it, the selection outline, the HUC10 watershed cells with corridor outlines, state lines, all basemaps with the tile queue, your location, offline imagery.
+2. **Trail and facility layers**: the A.T. centerline, side trails, shelters, parking and the other live layers, their labels and popups, trail segments.
+3. **Everything else**: box selection, guided tours, the elevation profile, phenology dots, search markers.
+
+Until stage 3, map code not yet ported still calls Leaflet through a stand-in in app.js that does nothing (marked PARKED).
