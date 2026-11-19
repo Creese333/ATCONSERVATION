@@ -2943,7 +2943,7 @@ function extIndex(){ for (const th in ROW) delete ROW[th]; if (!D.themes.edd) D.
 function setExt(ext, quiet){ if (ext === S.ext) return Promise.resolve();
   if (ext === 'huc' && !EXT.huc){ S.extMsg = 'Loading the watershed cells...'; side();
     return extLoad().then(() => { S.extMsg = ''; return setExt('huc'); },
-      () => { S.extMsg = 'The watershed cells (' + EXTFILE + ') could not be loaded. They need to sit beside this page on the web site.'; side(); }); }
+      () => { S.extMsg = 'The watershed cells could not be loaded from the A.T. Resource Grid site. Check the connection and try again.'; side(); }); }
   /* the selection is carried over by grid ID; cells outside the corridor are dropped when going back to it */
   const keep = S.cell != null ? [S.cellLv, D.levels[S.cellLv].id[S.cell]] : null;
   const box = S.box ? {lv:S.box.lv, ids:S.box.cells.map(c => D.levels[S.box.lv].id[c]), label:S.box.label, within:S.box.within ? [S.box.within[0], D.levels[S.box.within[0]].id[S.box.within[1]]] : null} : null;
