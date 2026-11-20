@@ -4369,9 +4369,45 @@ const TOURS = {
     {t:'Part of a larger effort', q:'rest', m:'grass', lv:'wheel', view:[[33.4, -89.2], [44.0, -70.9]], egi:1, key:'Small stars mark the other parks with Eastern Grasslands Initiative projects; tap one for its name.', img:{f:'grassland-site-visit', c:'NPS staff and partners on a grassland restoration site visit', a:'A group of people in field clothes standing in a wide meadow of grasses and white wildflowers under a cloudy sky, with wooded hills beyond'},
      x:'The A.T. work is part of the Eastern Grasslands Initiative, a National Park Service effort to restore native grasslands across eastern parks. In 2026, its first year of treatment, restoration began in more than 30 parks, from the center of the Gettysburg battlefield to Valley Forge’s Grand Parade.'},
     {t:'Explore on your own', q:'rest', m:'grass', lv:'auto', view:'trail', img:{f:'meadow-path', c:'A footpath through a native grass meadow', a:'A narrow dirt footpath through a mowed strip between tall native grasses, under a big cloudy sky'},
-     x:'Click any cell to see its grassland score and what drives it: nearby grassland species, priority invasives, soils and wetland proximity. Rare species are summarized by cell only, and exact locations are never shown. Scores are a screening tool, not a substitute for field surveys or compliance review.'}]}
+     x:'Click any cell to see its grassland score and what drives it: nearby grassland species, priority invasives, soils and wetland proximity. Rare species are summarized by cell only, and exact locations are never shown. Scores are a screening tool, not a substitute for field surveys or compliance review.'}]},
+  /* the map controls, shown on the facilities question: 3D, layers, cells off and selecting cells, at places with steep relief.
+     A stop can set: d3 (3D on or off), cam (where the camera looks from: at, zoom z in MapLibre terms, pitch, bearing),
+     layers (the map layers on; every other one goes off), cells (on or off), tools (open Map tools) and hl (the controls
+     that pulse). When the tour ends, the layers, cells and 3D go back to how they were. */
+  '3D': {title:'Exploring the trail in 3D', ctl:1,
+   steps:[
+    {t:'The map is yours to steer', q:'feat', m:'fac', lv:'auto', view:'trail', d3:false, cells:true, layers:[], hl:['#layerstog', '#toolstog', '#ctlbtn', '#v3btn'],
+     x:'Each cell shows how many shelters, campsites, privies, parking areas, bridges and other facilities it holds. Three controls change what you see: Layers adds the facilities themselves, Map tools turns the cells off or selects them, and 3D tilts the map over the mountains. This tour uses each one.'},
+    {t:'Turn on 3D', q:'feat', m:'shel', lv:'hex', d3:true, cam:{at:[35.6245, -83.3985], z:13.1, pitch:64, bearing:48}, cells:true, layers:['shelters'], hl:['#v3btn', '#layerstog'],
+     x:'Pressing 3D tilts the map and raises the mountains. Here in the Great Smoky Mountains, Shelters is switched on under Layers, and Icewater Spring Shelter sits just below the crest. Drag with two fingers, or with the right mouse button, to turn and tilt the view.'},
+    {t:'Turn the cells off', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[35.6330, -83.3880], z:13.4, pitch:66, bearing:62}, cells:false, tools:1, layers:['shelters', 'vistas'], hl:['#cellsbtn'],
+     x:'Cells off, under Map tools, clears the colored grid so you can read the land itself. With Vistas also switched on, the viewpoints along this knife-edge ridge appear, among them Charlies Bunion and The Sawteeth. Tap any symbol for its name.'},
+    {t:'Maintained landscapes', q:'feat', m:'mlac', lv:'hex', d3:true, cam:{at:[36.1050, -82.1000], z:12.5, pitch:62, bearing:72}, cells:false, layers:['mland', 'shelters'], hl:['#layerstog'],
+     x:'The grassy balds of the Roan Highlands are kept open by active management, and the Maintained landscapes layer outlines them. Round Bald, Jane Bald, Grassy Ridge, Little Hump and Hump Mountain run east along the ridge, with Stan Murray and Overmountain shelters between them.'},
+    {t:'Vistas on the Presidential Range', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[44.2560, -71.3300], z:12.3, pitch:66, bearing:24}, cells:false, layers:['vistas'], hl:['#layerstog'],
+     x:'Mount Washington and the Presidential Range hold some of the steepest relief on the trail. The Vistas layer marks the viewpoints recorded along the A.T., from summits to ledges and open areas. Any layer turns on and off the same way, from Layers.'},
+    {t:'Select cells', q:'feat', m:'mlac', lv:'hex', pick:{near:[36.6566, -81.5352], km:2.2}, d3:true, cam:{at:[36.6440, -81.5450], z:12.7, pitch:58, bearing:38}, cells:true, tools:1, layers:['shelters', 'mland'], hl:['#pickbtn', '#boxbtn'],
+     x:'Pick cells and Select area, under Map tools, choose cells to compare. These {n} cells around Thomas Knob Shelter in the Grayson Highlands are selected; each holds {range} of maintained landscapes.'},
+    {t:'Explore on your own', q:'feat', m:'fac', lv:'auto', view:'trail', d3:false, cells:true, layers:[], hl:['#v3btn', '#layerstog', '#toolstog', '#ctlbtn'],
+     x:'The map is flat again with the cells back on. Press 3D whenever you want the mountains, choose layers to see what’s on the ground, and click any cell for what’s built and maintained there.'}]}
 };
 const TOUR = {id:null, k:0};
+/* the map controls a stop sets (see the 3D tour); what they were before the tour is kept in TOUR.prev and put back at the end */
+function tourTools(on){ if (isPhone()){ const cb = $('#ctlbtn'), o = document.body.classList.contains('ctlopen'); if (!!on !== o && cb) cb.click(); }
+  else if (on){ const tg = $('#toolstog'); if (tg && tg.getAttribute('aria-expanded') === 'false') tg.click(); } }
+function tourCtl(st){ const ph = isPhone();
+  if (st.layers) LIVE.forEach(l => { const w = st.layers.includes(l.id); if (w !== !!l.on) liveToggle(l, w); });
+  if ('cells' in st && st.cells !== S.cells) $('#cellsbtn').click();
+  if ('d3' in st && st.d3 !== map.is3D()){ if (S.drawing) drawMode(false); map.set3D(st.d3, {animate:false}); }
+  if ('tools' in st || TOURS[TOUR.id].ctl) tourTools(!!st.tools);
+  if (window.layersPlace) layersPlace(); if (window.lvPlace) lvPlace();   /* the control rows, laid out again for what is shown now */
+  document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl'));
+  (st.hl || []).forEach(s => { const e = document.querySelector(s); if (e && e.getClientRects().length){ void e.offsetWidth; e.classList.add('tourhl'); } }); }   /* shown (offsetParent is null for the fixed phone controls) */
+function tourCam(st){ const c = st.cam, ph = isPhone(), o = {center:[c.at[1], c.at[0]], zoom:c.z - (ph ? .6 : 0), pitch:c.pitch, bearing:c.bearing};
+  if (ph){ map.ml.jumpTo(o); return; }
+  /* beside the tour panel, the place is centered in the part of the map the panel leaves clear */
+  const tr = $('#tour'), mw = $('#mapwrap'); let dx = 0; if (tr && mw){ const a = tr.getBoundingClientRect(), b = mw.getBoundingClientRect(); dx = Math.max(0, (a.right - b.left + 12) / 2); }
+  map.ml.flyTo(Object.assign(o, {offset:[dx, 0], duration:2600, essential:true})); }
 let tourSites = null;
 const STAR = s => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>`;
 function tourSitesClear(){ if (tourSites) tourSites.forEach(m => m.remove()); tourSites = null; }
@@ -4408,11 +4444,12 @@ function tourGo(k){ const T = TOURS[TOUR.id]; if (!T) return;  TOUR.k = Math.max
   const q = Q.find(x => x.id === st.q); if (q){ S.q = q; S.m = q.m.find(x => x.id === st.m) || q.m[0]; } S.level = st.lv; BRK.clear(); const [lv, cells] = tourCells(st); if (!cells.length) clearSel(); redraw();   /* a new selection replaces the old one without clearing first, so phones don't jump */
   const ph = isPhone(); if (ph){ TOUR.userScrolled = false; tourMobile(true); }
   if (cells.length){ selectMany(lv, cells, null, 'Tour stop: ' + st.t); S.box.tour = true; profile(); }
-  tourSitesDraw(TOURS[TOUR.id], st); tourDraw(lv, cells);
+  tourSitesDraw(TOURS[TOUR.id], st); tourDraw(lv, cells); tourCtl(st);
   if (ph) map.invalidateSize();
   let bd = null; if (cells.length){ bd = G.bounds([]); cells.forEach(c => ring(lv, c).forEach(p => bd.extend(p))); bd = bd.pad(st.pick.top ? .05 : .6); }
   else if (st.view === 'trail') bd = TRAIL.bounds(); else if (Array.isArray(st.view)) bd = G.bounds(st.view);
-  if (ph){ map.stop(); if (st.zoom && cells.length) map.setView(st.pick.near, st.zoom, {animate:false}); else if (bd) map.fitBounds(bd, {animate:false, maxZoom:12}); }
+  if (st.cam){ map.stop(); tourCam(st); }
+  else if (ph){ map.stop(); if (st.zoom && cells.length) map.setView(st.pick.near, st.zoom, {animate:false}); else if (bd) map.fitBounds(bd, {animate:false, maxZoom:12}); }
   else { /* a wide map view sits in the middle of the map; it slides east only on a window too narrow to keep the trail
              clear of the tour panel, by about the width the trail would otherwise be hidden by */
     let pl = 0; if (Array.isArray(st.view) && !cells.length){ const tr = $('#tour'), mw = $('#mapwrap');
@@ -4461,12 +4498,16 @@ function tourMobile(on){ document.body.classList.toggle('touring', !!on); if (on
 function tourSize(){ const H = window.visualViewport ? visualViewport.height : innerHeight, m = Math.max(260, Math.round(H * .62)); document.body.style.setProperty('--tmh', m + 'px'); $('#mapwrap').style.height = m + 'px'; document.body.style.setProperty('--tph', Math.max(190, Math.round(H - m)) + 'px'); }
 addEventListener('resize', () => { if (document.body.classList.contains('touring')) tourSize(); });
 function tourScroll(){ const w = $('#mapwrap'); if (!w) return; const y = w.getBoundingClientRect().top + scrollY; if (Math.abs(scrollY - y) > 2) scrollTo({top:y, behavior:'auto'}); }
-function tourStart(id){ if (HOWK >= 0) howEnd(); if (S.side.qs){ S.side.qs = false; store.set('side2', S.side); } if (!TOURS[id]) return; if (typeof goatEvent === 'function') goatEvent('tour-' + id); if (TOUR.leg == null){ TOUR.leg = S.legend; S.legend = false; } TOUR.id = id; tourGo(0); }   /* the legend folds up while the tour panel is open */
-function tourEnd(){ TOUR.id = null; const d = $('#tour'); if (d) d.remove(); if (document.body.classList.contains('touring')){ tourMobile(false); lockW = 0; lockMapHeight(); map.invalidateSize(); } tourSitesClear(); if (TOUR.leg != null){ S.legend = TOUR.leg; TOUR.leg = null; legend(); } try { const h = new URLSearchParams(location.hash.slice(1)); if (h.has('tour')){ h.delete('tour'); history.replaceState(null, '', '#' + h.toString()); } } catch (x) {} }
+function tourStart(id){ if (HOWK >= 0) howEnd(); if (S.side.qs){ S.side.qs = false; store.set('side2', S.side); } if (!TOURS[id]) return; if (typeof goatEvent === 'function') goatEvent('tour-' + id); if (TOUR.leg == null){ TOUR.leg = S.legend; S.legend = false; }
+  if (TOURS[id].ctl && !TOUR.prev) TOUR.prev = {layers:LIVE.filter(l => l.on).map(l => l.id), cells:S.cells, d3:map.is3D()};
+  document.body.classList.toggle('tourctl', !!TOURS[id].ctl); TOUR.id = id; tourGo(0); }   /* the legend folds up while the tour panel is open */
+function tourEnd(){ const was = TOUR.id; document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl'));
+  if (TOUR.prev && was){ const P = TOUR.prev; TOUR.prev = null; tourCtl(Object.assign({layers:P.layers, cells:P.cells, d3:P.d3}, TOURS[was].ctl ? {tools:0} : {})); document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl')); }
+  document.body.classList.remove('tourctl'); TOUR.id = null; const d = $('#tour'); if (d) d.remove(); setTimeout(() => { if (window.layersPlace) layersPlace(); if (window.lvPlace) lvPlace(); }, 50); if (document.body.classList.contains('touring')){ tourMobile(false); lockW = 0; lockMapHeight(); map.invalidateSize(); } tourSitesClear(); if (TOUR.leg != null){ S.legend = TOUR.leg; TOUR.leg = null; legend(); } try { const h = new URLSearchParams(location.hash.slice(1)); if (h.has('tour')){ h.delete('tour'); history.replaceState(null, '', '#' + h.toString()); } } catch (x) {} }
 document.addEventListener('keydown', e => { if (!TOUR.id || /input|select|textarea/i.test((e.target.tagName || ''))) return;
   if (e.key === 'ArrowRight') tourGo(TOUR.k + 1); else if (e.key === 'ArrowLeft') tourGo(TOUR.k - 1); else if (e.key === 'Escape') tourEnd(); });
 /* the Tour chip sits inside the question it belongs to; it starts the tour without switching the question first */
-const QTOUR = {rest:'grassland'};
+const QTOUR = {rest:'grassland', feat:'3D'};
 document.addEventListener('click', e => { const t = e.target.closest('.qtour'); if (!t) return; e.preventDefault(); e.stopPropagation(); tourStart(t.dataset.tour); }, true);
 document.addEventListener('keydown', e => { const t = e.target.closest && e.target.closest('.qtour'); if (!t || (e.key !== 'Enter' && e.key !== ' ')) return; e.preventDefault(); e.stopPropagation(); tourStart(t.dataset.tour); }, true);
 setTimeout(() => { if (S.pendingTour) tourStart(S.pendingTour); S.pendingTour = null; }, 1200);
@@ -5187,7 +5228,10 @@ if (S.pendingExt === 'huc' && EXTQ.includes(S.q.id) && !EXTNO.includes(S.q.id)) 
       let top, left; if (zr && zr.height){ const mi = z.querySelector('.maplibregl-ctrl-zoom-out'), mr = mi ? mi.getBoundingClientRect() : zr;   /* beside the zoom-out button */
         const tb = $('#tools'), tbr = tb && tb.offsetParent ? tb.getBoundingClientRect() : null;   /* left edge lined up with the Map tools box above */
         top = mr.top - w.top + (mr.height - barH()) / 2; left = (tbr ? tbr.left : zr.right + 8) - w.left; }
-      else { const sec = $('#section'), sr = sec && sec.offsetParent ? sec.getBoundingClientRect() : null; top = (sr ? sr.bottom - w.top : 50) + 8; left = 10; }
+      else { const sec = $('#section'), sr = sec && sec.getClientRects().length ? sec.getBoundingClientRect() : null;
+        /* with the section picker hidden (a tour about the controls), under the Map tools row instead */
+        const cb = $('#ctlbtn'), cr2 = !sr && cb && cb.getClientRects().length ? cb.getBoundingClientRect() : null;
+        top = (sr ? sr.bottom - w.top : cr2 ? cr2.bottom - w.top : 50) + 8; left = 10; }
       bar.style.top = Math.round(top) + 'px'; bar.style.left = Math.round(left) + 'px'; lvHead();
       justify(zr && zr.height && !document.body.classList.contains('stackui'));
       if (typeof phTickPos === 'function') phTickPos();

@@ -586,6 +586,10 @@ header .blaze{width:14px;height:38px}
 .qs button.qgrp[aria-expanded=false] i{transform:rotate(-90deg)}
 .segleg{margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.12)}.segleg label{display:flex;gap:6px;align-items:center;font-weight:600;margin-bottom:4px;cursor:pointer}.segleg i.ln{height:5px !important;border-radius:2px}.segmode{display:flex;gap:4px;margin:2px 0 6px}.segmode button{flex:1;font:inherit;font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid rgba(255,255,255,.18);background:transparent;color:inherit;cursor:pointer}.segmode button.on{background:rgba(255,255,255,.16);font-weight:600}
 .segpopw .maplibregl-popup-content{margin:10px 12px;font-size:13px;line-height:1.35}.segpop table{border-collapse:collapse;margin:6px 0}.segpop td{padding:1px 8px 1px 0;vertical-align:top}.segpop td:first-child{color:var(--muted, #A8B8CA)}.segnote{font-size:12px;color:var(--muted, #A8B8CA)}
+/* the control a tour stop is about pulses three times in yellow (the 3D tour) */
+.tourhl{position:relative;animation:tourhl 1.3s ease-in-out 3;border-radius:999px}
+@keyframes tourhl{0%,100%{box-shadow:0 0 0 0 rgba(240,196,25,0)}50%{box-shadow:0 0 0 4px rgba(240,196,25,.95),0 0 18px 4px rgba(240,196,25,.55)}}
+@media (prefers-reduced-motion:reduce){.tourhl{animation:none;box-shadow:0 0 0 3px rgba(240,196,25,.95)}}
 .tour{position:absolute;left:12px;top:120px;z-index:450;overflow-y:auto;width:min(470px,calc(100% - 24px));background:rgba(16,28,46,.96);color:#EEF2F7;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.35);padding:16px 18px 14px;font-size:14.5px;line-height:1.5}
 .tour h3{margin:0 0 4px;font-size:17px}.tour .tk{padding-right:34px;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.7;margin-bottom:6px}
 .tour p{margin:6px 0 10px}.tour .tnav{display:flex;align-items:center;gap:8px}.tour .tnav button{font:inherit;font-size:14.5px;padding:7px 14px;border-radius:7px;border:1px solid rgba(255,255,255,.25);background:transparent;color:inherit;cursor:pointer}
@@ -765,7 +769,9 @@ button.qpx.blktog{display:inline-flex;align-items:center;justify-content:center;
   body.stackui .striphead h2{font-size:12px}
   /* the tour keeps its own layout: map on top, the stop below */
   body.stackui.touring aside,body.stackui.touring #strip{display:none}
-  body.stackui.touring #ctls,body.stackui.touring .maplibregl-ctrl-top-right,body.stackui.touring .secpick,body.stackui.touring #mapplaybox{display:none !important}
+  body.stackui.touring .secpick,body.stackui.touring #mapplaybox{display:none !important}
+  /* the map controls stay on during a tour that is about them (tourctl: the 3D tour) */
+  body.stackui.touring:not(.tourctl) #ctls,body.stackui.touring:not(.tourctl) .maplibregl-ctrl-top-right{display:none !important}
 }
 #howbtn{display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:0;flex:none;width:34px;height:34px;border-radius:50%;font:inherit;font-size:17px;font-weight:700;color:#fff;background:transparent;border:1px solid rgba(255,255,255,.55);cursor:pointer;margin-right:8px}
 #howbtn:hover,#howbtn:focus-visible{background:rgba(255,255,255,.12)}
@@ -891,7 +897,7 @@ body:not(.stackui) #legend{max-height:calc(100% - 96px);overflow-y:auto;overscro
 body.stackui #layers.laydock{border-radius:999px;padding:0 4px;display:flex;align-items:center;background:#0F1C2E;border-color:#3A4E68}
 body.stackui #layers.laydock #layerstog{font-size:13px;color:#fff;padding:0 8px;height:100%}
 body.stackui #layers.laydock #layerspanel{position:fixed;top:auto;left:10px;right:10px;width:auto;max-width:none}
-body.stackui.touring #layers.laydock{display:none !important}
+body.stackui.touring:not(.tourctl) #layers.laydock{display:none !important}
 
 body.stackui #ctlbtn .cbl{display:none !important}
 body.stackui #ctlbtn .cbs{display:inline !important}
@@ -909,7 +915,7 @@ body.stackui #levels.lvdock{width:52px;padding:2px;background:#0F1C2Ee6;border-c
 body.stackui #levels.lvdock .u{display:none}
 body.stackui #levels.lvdock .lvh{font-size:10px;padding:2px 0}
 body.stackui #levels.lvdock button{font-size:13px;padding:3px 0;line-height:18px}
-body.stackui.touring #levels.lvdock,body.touring #levels.lvdock{display:none !important}
+body.stackui.touring:not(.tourctl) #levels.lvdock,body.touring:not(.tourctl) #levels.lvdock{display:none !important}
 body.stackui.ctlopen #lvbar{visibility:hidden}
 
 /* cell size + basemap bar */
@@ -937,7 +943,7 @@ body.stackui #levels.lvdock .u{display:inline}
 body.stackui #levels.lvdock button:not(.lvh){font-size:13px;padding:5px 10px;text-align:left}
 body.stackui #toolstog{display:none !important}
 body.stackui.ctlopen #toolsbody{display:flex !important;border-left:0;margin-left:0;padding-left:0}
-body.touring #lvbar{display:none !important}
+body.touring:not(.tourctl) #lvbar{display:none !important}
 #base.bsdock{position:static !important}
 body.stackui.ctlopen #tools{flex-wrap:nowrap}
 body.stackui.ctlopen #toolsbody{flex-wrap:nowrap}
