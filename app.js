@@ -4422,9 +4422,24 @@ function tourCut(go){ const tk = ++TOUR.cut; tourFade(true);
   setTimeout(() => { if (tk !== TOUR.cut || !TOUR.id) return; TOUR.instant = true; try { go(); } finally { TOUR.instant = false; } tourReady(tk); }, FADEMS); }
 /* the new view shows once it has drawn; then the next stop's tiles are fetched quietly */
 function tourReady(tk){ let done = false; const fin = () => { if (done) return; done = true; if (tk !== TOUR.cut) return; tourFade(false); setTimeout(tourPrefetch, 1500); };
-  /* back in as soon as the map has drawn the new place (or 0.6 s at most): the far tiles keep loading under the slower fade-in
-     (waiting for the whole tilted view, out to the horizon, left the map dark for seconds) */
-  setTimeout(() => { if (done) return; map.ml.once('idle', fin); setTimeout(fin, 600); }, 60); }
+  /* In 3D, first the ground under the view's centre. MapLibre stands the camera on the terrain height it knows there when the
+     view is set, and (MapLibre 5: after the eased tilt that turns 3D on, its "elevation freeze" stays on until the next drag
+     or pinch) it does not lift it when the real terrain arrives, so a view set before the terrain loaded stays on sea level,
+     shifted from the one chosen. The fade waits until the height there is in and has held for 0.3 s (1.5 s at most; the next
+     stop's terrain is fetched ahead, so usually much sooner) and sets the view again, now on the real ground (onGround).
+     Then back in as soon as the map has drawn the place (0.6 s at most); the far tiles keep loading under the fade-in. */
+  /* the camera's ground height against the real one under the centre; set again while they differ by more than 15 m, behind
+     the fade until they agree for 0.3 s with terrain in (1.5 s at most), then quietly for 5 s more in case finer terrain comes in late */
+  const t0 = Date.now(), st = TOUR.id && TOURS[TOUR.id].steps[TOUR.k], want3D = st && 'd3' in st ? st.d3 : map.is3D(); let okSince = 0, faded = false, demIn = !want3D;
+  const onDem = e => { if (e.sourceId === 'dem' && e.tile) demIn = true; }; map.ml.on('sourcedata', onDem); setTimeout(() => map.ml.off('sourcedata', onDem), 7000);
+  const gap = () => { if (!map.ml.getTerrain()) return want3D ? Infinity : 0; const e = map.ml.queryTerrainElevation(map.ml.getCenter());
+    return e != null && isFinite(e) && e > 0 ? Math.abs(e - map.ml.getCenterElevation()) : (want3D ? Infinity : 0); };
+  const ground = () => { if (tk !== TOUR.cut) return; const now = Date.now(), g = gap();
+    if (g > 15 && isFinite(g) && TOUR.again && !map.ml.isMoving()){ TOUR.again(); okSince = 0; }
+    else if (g <= 15 && demIn){ if (!okSince) okSince = now; } else okSince = 0;
+    if (!faded && ((okSince && now - okSince >= 300) || now - t0 >= 1500)){ faded = true; map.ml.once('idle', fin); setTimeout(fin, 600); }
+    if (now - t0 < 7000) setTimeout(ground, 100); };
+  setTimeout(ground, 60); }
 /* the next stop's basemap and terrain tiles, fetched into the browser's cache while this stop is read (same addresses and
    request settings as the map's own tile loader, so the map finds them there): around the place the camera looks at, at
    the zoom of the view and two coarser zooms reaching ahead toward the horizon */
@@ -4462,8 +4477,11 @@ function tourPop(st){ const l = LIVE.find(x => x.id === st.pop), k = TOUR.k, id 
       const d = Math.hypot(q[0] - c.lng, (q[1] - c.lat) * 1.4); if (d < bd){ bd = d; best = f; } });
     if (best){ const q = best.geometry.coordinates; popOpen(G.ll(q[1], q[0]), featPopup(l, best.properties || {}), {offset:14, still:1}); } };
   setTimeout(go, 600); }
+/* a view with the ground height under its centre given outright: MapLibre 5 looks the height up for a terrain tile at the view's
+   own zoom, and at a zoom with a fraction (11.88) finds none and uses 0, i.e. sea level */
+function onGround(v){ const e = map.ml.getTerrain() ? map.ml.queryTerrainElevation(v.center) : null; return e != null && isFinite(e) ? Object.assign({}, v, {elevation:e}) : v; }
 function tourCam(st){ const c = st.cam, ph = isPhone(), o = {center:[c.at[1], c.at[0]], zoom:c.z - (ph ? .6 : 0), pitch:c.pitch, bearing:c.bearing};
-  if (ph){ map.ml.jumpTo(o); return; }
+  if (ph){ map.ml.jumpTo(o); TOUR.again = () => map.ml.jumpTo(onGround(o)); return; }
   /* beside the tour panel, the place is centered in the part of the map the panel leaves clear */
   /* and, when the selection summary is open on the right (the select-cells stop), between the two panels */
   const tr = $('#tour'), mw = $('#mapwrap'), pf = $('#profile'); let dx = 0;
@@ -4479,8 +4497,10 @@ function tourCam(st){ const c = st.cam, ph = isPhone(), o = {center:[c.at[1], c.
     const side = (b.width - L - R) * (b.height - 130), under = (b.width - 24 - R) * (b.height - T - 40);
     const pad = side >= under ? {left:L, right:R, top:90, bottom:40} : {left:24, right:R, top:T, bottom:40};
     const cam = map.ml.cameraForBounds(bd, {padding:pad, bearing:c.bearing, pitch:c.pitch});
-    if (cam){ map.ml.flyTo(Object.assign({}, o, cam, {bearing:c.bearing, pitch:c.pitch, zoom:Math.min(cam.zoom, o.zoom + 1), duration:TOUR.instant ? 0 : 2600, essential:true})); return; } }
-  if (TOUR.instant) map.ml.easeTo(Object.assign(o, {offset:[dx, 0], duration:0})); else map.ml.flyTo(Object.assign(o, {offset:[dx, 0], duration:2600, essential:true})); }
+    if (cam){ const v = Object.assign({}, o, cam, {bearing:c.bearing, pitch:c.pitch, zoom:Math.min(cam.zoom, o.zoom + 1)}); TOUR.again = () => map.ml.jumpTo(onGround(v));
+      map.ml.flyTo(Object.assign({}, v, {duration:TOUR.instant ? 0 : 2600, essential:true})); return; } }
+  TOUR.again = () => { map.ml.easeTo(Object.assign({}, o, {offset:[dx, 0], duration:0})); const g = onGround({center:map.ml.getCenter()}); if (g.elevation != null) map.ml.jumpTo(g); };
+  if (TOUR.instant) TOUR.again(); else map.ml.flyTo(Object.assign(o, {offset:[dx, 0], duration:2600, essential:true})); }
 let tourSites = null;
 const STAR = s => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>`;
 function tourSitesClear(){ if (tourSites) tourSites.forEach(m => m.remove()); tourSites = null; }
@@ -4523,6 +4543,7 @@ function tourGo(k){ const T = TOURS[TOUR.id]; if (!T) return;  TOUR.k = Math.max
   else if (st.view === 'trail') bd = TRAIL.bounds(); else if (Array.isArray(st.view)) bd = G.bounds(st.view);
   if (POP) POP.remove(); if (st.pop) tourPop(st);
   const move = () => {
+  TOUR.again = null;
   if (st.cam){ map.stop(); tourCam(st); }
   else if (ph){ map.stop(); if (st.zoom && cells.length) map.setView(st.pick.near, st.zoom, {animate:false}); else if (bd) map.fitBounds(bd, {animate:false, maxZoom:12}); }
   else { /* a wide map view sits in the middle of the map; it slides east only on a window too narrow to keep the trail
@@ -4535,7 +4556,8 @@ function tourGo(k){ const T = TOURS[TOUR.id]; if (!T) return;  TOUR.k = Math.max
     if (bd){ if (TOUR.instant) map.fitBounds(bd, {animate:false, maxZoom:12, paddingTopLeft:[pl, 0]}); else map.flyToBounds(bd, {duration:1.2, maxZoom:12, paddingTopLeft:[pl, 0]}); } if (st.zoom && cells.length) setTimeout(() => { if (TOUR.id) map.flyTo(st.pick.near, st.zoom, {duration:.8}); }, 1300); } };
   /* the tour about the controls jumps between places hundreds of miles apart: rather than fly there in 3D (drawing and
      loading every place in between), the map fades out, jumps, and fades back in once the new view has drawn */
-  if (TOURS[TOUR.id].ctl){ const go = () => { tourD3(st); move(); }; if ((ph && (st.cam || bd)) || tourFar(st, bd)) tourCut(go);   /* phones jump, so always behind the fade */ else { go(); tourReady(++TOUR.cut); } }
+  if (TOURS[TOUR.id].ctl){ const go = () => { tourD3(st); move(); }; if ((ph && (st.cam || bd)) || tourFar(st, bd)) tourCut(go);   /* phones jump, so always behind the fade */
+    else { go(); const tk = ++TOUR.cut; map.ml.once('moveend', () => { if (tk === TOUR.cut) tourReady(tk); }); } }   /* a glide ends on the real ground too */
   else move();
   if (ph) tourScroll(); }
 function tourDraw(lv, cells){ const T = TOURS[TOUR.id], st = T.steps[TOUR.k], N = T.steps.length; let d = $('#tour');
