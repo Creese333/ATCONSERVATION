@@ -2627,7 +2627,7 @@ Q.forEach(q => q.m.forEach(m => { m.q = q; m.th = m.th || q.th; m.kind = m.kind 
   if (m.hollow0){ const g = m.get; m.get = (lv, c) => { const v = g(lv, c); return v === 0 ? null : v; }; } }));
 
 /* ---------- state ---------- */
-/* The basemap the page opens on: USGS imagery, highest resolution. */
+/* The basemap the page opens on: OpenStreetMap. */
 const DEFBASE = 'osm';
 /* When does it flower here? opens on Flowering, week by week, so Play shows the season moving north (Pest and invasives keep their own list) */
 { const p = Q.find(q => q.id === 'phen'); if (p){ const w = p.m.find(m => m.id === 'wave'); if (w) p.m = [w, ...p.m.filter(m => m !== w)]; } }
