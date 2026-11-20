@@ -108,8 +108,7 @@ async function tileLoad(params, ac){
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const ct = r.headers.get('content-type') || '';
       if (ct && !/^image\//.test(ct)) throw new Error('not an image');   /* the image services answer some errors with a 200 and a JSON message */
-      let data = await r.arrayBuffer();
-      if (tag.startsWith('dem')) data = await demClean(data);   /* elevation: holes and spikes filled */
+      const data = await r.arrayBuffer();
       if (tag){ const [src, k] = splitTag(tag), m = MISSN.get(src); if (m) m.delete(k); }
       return {data, cacheControl:r.headers.get('cache-control'), expires:r.headers.get('expires')};
     } catch (e){ if (sig.aborted) throw e; last = e; }
@@ -121,44 +120,6 @@ async function tileLoad(params, ac){
   throw last || new Error('tile failed');
 }
 const splitTag = t => { const i = t.indexOf('/'); return [t.slice(0, i), t.slice(i + 1)]; };
-
-/* Elevation tiles (AWS Terrain Tiles, Terrarium encoding: metres = R * 256 + G + B / 256 - 32768) have holes in places,
-   often around reservoirs and lakes, stored as impossible depths, and now and then a single spike. Drawn in 3D they become
-   deep pits whose walls stretch the basemap into stripes. Each elevation tile is checked as it arrives: a height outside
-   what the eastern U.S. has (below -60 m or over 2,100 m), or one far above or below all its neighbours, is filled from the
-   good heights around it, and so is a small patch far outside the tile's own range. A tile with nothing wrong is passed on untouched. */
-const ELO = -60, EHI = 2100, SPIKE = 250;
-async function demClean(buf){
-  if (typeof OffscreenCanvas === 'undefined' || typeof createImageBitmap === 'undefined') return buf;
-  let bmp; try { bmp = await createImageBitmap(new Blob([buf], {type:'image/png'}), {premultiplyAlpha:'none', colorSpaceConversion:'none'}); } catch (e){ return buf; }
-  const w = bmp.width, h = bmp.height, cv = new OffscreenCanvas(w, h), cx = cv.getContext('2d', {willReadFrequently:true});
-  cx.drawImage(bmp, 0, 0); if (bmp.close) bmp.close();
-  const im = cx.getImageData(0, 0, w, h), d = im.data, n = w * h, e = new Float32Array(n), bad = new Uint8Array(n); let nb = 0;
-  for (let i = 0; i < n; i++){ const v = d[4 * i] * 256 + d[4 * i + 1] + d[4 * i + 2] / 256 - 32768; e[i] = v; if (v < ELO || v > EHI){ bad[i] = 1; nb++; } }
-  /* patches far outside the tile's own range: more than 600 m above its top 1 % of heights or below its bottom 1 % */
-  { const smp = []; for (let i = 0; i < n; i += 7) if (!bad[i]) smp.push(e[i]); smp.sort((a, b) => a - b);
-    if (smp.length > 50){ const p1 = smp[Math.floor(smp.length * .01)], p99 = smp[Math.floor(smp.length * .99)];
-      for (let i = 0; i < n; i++) if (!bad[i] && (e[i] > p99 + 600 || e[i] < p1 - 600)){ bad[i] = 3; nb++; } } }
-  /* spikes: far above or below every good neighbour */
-  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++){ const i = y * w + x; if (bad[i]) continue; let lo = Infinity, hi = -Infinity, k = 0;
-    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++){ if (!dx && !dy) continue; const j = i + dy * w + dx; if (bad[j]) continue; const v = e[j]; if (v < lo) lo = v; if (v > hi) hi = v; k++; }
-    if (k >= 4 && (e[i] > hi + SPIKE || e[i] < lo - SPIKE)){ bad[i] = 2; nb++; } }
-  if (!nb) return buf;
-  if (nb > n * .9) return buf;   /* almost nothing good to fill from: leave it */
-  /* fill: each bad height from the nearest good ones left, right, up and down, weighted by distance; repeated so holes close from their edges */
-  const good = i => !bad[i];
-  for (let pass = 0; pass < 4 && nb; pass++){ const fix = [];
-    for (let i = 0; i < n; i++){ if (!bad[i]) continue; const x = i % w, y = (i - x) / w; let s = 0, wt = 0;
-      for (let k = x - 1; k >= 0; k--){ const j = y * w + k; if (good(j)){ const f = 1 / (x - k); s += e[j] * f; wt += f; break; } }
-      for (let k = x + 1; k < w; k++){ const j = y * w + k; if (good(j)){ const f = 1 / (k - x); s += e[j] * f; wt += f; break; } }
-      for (let k = y - 1; k >= 0; k--){ const j = k * w + x; if (good(j)){ const f = 1 / (y - k); s += e[j] * f; wt += f; break; } }
-      for (let k = y + 1; k < h; k++){ const j = k * w + x; if (good(j)){ const f = 1 / (k - y); s += e[j] * f; wt += f; break; } }
-      if (wt) fix.push([i, s / wt]); }
-    for (const [i, v] of fix){ e[i] = v; bad[i] = 0; nb--; } }
-  for (let i = 0; i < n; i++){ const v = Math.max(-1000, Math.min(9000, bad[i] ? 0 : e[i])) + 32768, r = Math.floor(v / 256), g = Math.floor(v - r * 256), b = Math.floor((v - Math.floor(v)) * 256);
-    d[4 * i] = r; d[4 * i + 1] = g; d[4 * i + 2] = b; d[4 * i + 3] = 255; }
-  cx.putImageData(im, 0, 0);
-  try { const blob = await cv.convertToBlob({type:'image/png'}); return await blob.arrayBuffer(); } catch (err){ return buf; } }
 ml.addProtocol('atq', tileLoad);
 const atq = (url, src) => url.replace(/^https:\/\//, 'atq://') + '#' + src + '/{z}/{x}/{y}';
 
