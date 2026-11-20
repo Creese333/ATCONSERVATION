@@ -3397,11 +3397,17 @@ function acqPlay(on){ if (acqTimer){ clearInterval(acqTimer); acqTimer = null; }
 document.addEventListener('click', e => { if (e.target.closest('[data-acqplay]')) acqPlay(!acqTimer); });
 document.addEventListener('input', e => { if (e.target.id === 'acqyr'){ if (acqTimer) acqPlay(false); S.acqYr = +e.target.value; acqFrame(); } });
 document.addEventListener('change', e => { if (e.target.id === 'acqyr') side(); });
+/* how far one screen pixel spans, in degrees, where the land is drawn largest: near the bottom of the map. Shapes are
+   simplified on the server to half of this, so neighbouring areas still meet. (The width of the map's bounds divided by
+   its width in pixels is far too coarse once the map is tilted in 3D, since the bounds then reach toward the horizon;
+   tracts simplified that coarsely, each on its own, open gaps and overlaps between them that show as slivers.) */
+function degPx(){ const m = map.ml, c = m.getCanvas(), w = c.clientWidth, h = c.clientHeight, y = h * .9, a = m.unproject([w / 2, y]), q = m.unproject([w / 2 + 1, y]);
+  const d = Math.hypot(q.lng - a.lng, q.lat - a.lat); if (isFinite(d) && d > 0) return d; const b = map.getBounds(); return (b.getEast() - b.getWest()) / map.getSize().x; }
 async function liveLoad(l){ if (!l.on) return; const my = ++l.req, z = map.getZoom(); if (l.local) return histLayer(l, my);
   if (l.file){ if (!l.loaded){ liveStatus(l, 'Loading…'); try { const j = await (await fetch(l.file)).json(); if (my !== l.req) return; liveDraw(l, j.features); l.loaded = true; liveStatus(l, fmt(j.features.length, 0) + ' meadows, fields, farm fields and balds'); } catch (e){ liveStatus(l, 'Could not load this layer just now'); } } return; }
   try {
     if (l.bbox){ if (z < l.minZoom){ liveClear(l); labelSync(); liveStatus(l, 'Zoom in to see these'); return; }
-      liveStatus(l, 'Loading…'); const b = map.getBounds().pad(.15), px = (b.getEast() - b.getWest()) / (map.getSize().x * 1.3); await arcMeta(l);
+      liveStatus(l, 'Loading…'); const b = map.getBounds().pad(.15), px = degPx() / 2; await arcMeta(l);
       const f = await arcQuery(l.url, {geometry:[b.getWest(), b.getSouth(), b.getEast(), b.getNorth()].join(','), geometryType:'esriGeometryEnvelope', inSR:4326, spatialRel:'esriSpatialRelIntersects', outFields:l.fields || '*', maxAllowableOffset:px.toFixed(7), geometryPrecision:6}, 3);
       if (my !== l.req) return; liveDraw(l, f); liveStatus(l, f.length ? fmt(f.length, 0) + ' in view' + (l.id === 'lands' ? '. Click an area for its details. Switch this layer off to select grid cells here.' : '') : 'None in view'); return; }
     if (!l.loaded){ liveStatus(l, 'Loading…'); const [f] = await Promise.all([arcQuery(l.url, {outFields:'*', geometryPrecision:6}), arcMeta(l)]); if (my !== l.req) return; liveDraw(l, f); l.loaded = true; liveStatus(l, fmt(f.length, 0) + ' along the trail'); }

@@ -15,8 +15,9 @@
    atc-v5: the same, after the lighter-drawing change was taken back out.
    atc-v6: the same, with OpenStreetMap as the opening basemap.
    atc-v7: the same, after the phone control row stopped overlapping.
-   atc-v8: the same, after Describe as text was removed. */
-const VER = 'atc-v8';
+   atc-v8: the same, after Describe as text was removed.
+   atc-v9: the same, with the lands layer drawn without slivers in 3D. */
+const VER = 'atc-v9';
 const OFF = 'atoffline-1';          /* filled by Save for offline; never cleared here */
 const LIVE = 'atlive-1';            /* last copy of the trail line, mile points and point layers (shelters, campsites...) */
 const DATA = 'https://grid.trailassessment.org';   /* the data site: /data/ and /images/birds/ */
