@@ -3140,10 +3140,10 @@ function featPopup(l, p){ const kind = ({mland:'Maintained landscape', lands:'Ad
   return h; }
 /* one popup at a time, kept clear of the controls over the map */
 let POP = null;
-function popOpen(ll, html, o){ o = o || {}; if (POP) POP.remove();
+function popOpen(ll, html, o){ o = o || {}; if (POP) POP.remove();   /* o.still: leave the map where it is (a tour stop's view) */
   POP = new maplibregl.Popup({maxWidth:(o.maxWidth || 260) + 'px', offset:o.offset || 8, className:o.className || '', focusAfterOpen:false})
     .setLngLat(G.ll(ll).toLngLat()).setHTML(html).addTo(map.ml);
-  const me = POP; me.on('close', () => { if (POP === me) POP = null; }); setTimeout(() => { if (POP === me) keepClear(me.getElement()); }, 40); return me; }
+  const me = POP; me.on('close', () => { if (POP === me) POP = null; }); if (!o.still) setTimeout(() => { if (POP === me) keepClear(me.getElement()); }, 40); return me; }
 const featOpen = (l, p, latlng, offset) => popOpen(latlng, featPopup(l, p || {}), {offset});
 function liveStatus(l, s){ l.status = s; const e = document.querySelector('#layerspanel [data-st="' + l.id + '"]'); if (e) e.textContent = s; }
 const ICONZ = 9;
@@ -4424,7 +4424,7 @@ function tourPop(st){ const l = LIVE.find(x => x.id === st.pop), k = TOUR.k, id 
     const c = map.ml.getCenter(), b = map.getBounds(); let best = null, bd = Infinity;
     (l.feats || []).forEach(f => { const p = f.properties || {}, q = f.geometry.coordinates; if (!hasPh(p) || !b.contains(G.ll(q[1], q[0]))) return;
       const d = Math.hypot(q[0] - c.lng, (q[1] - c.lat) * 1.4); if (d < bd){ bd = d; best = f; } });
-    if (best){ const q = best.geometry.coordinates; featOpen(l, best.properties, G.ll(q[1], q[0]), 14); } };
+    if (best){ const q = best.geometry.coordinates; popOpen(G.ll(q[1], q[0]), featPopup(l, best.properties || {}), {offset:14, still:1}); } };
   setTimeout(go, 600); }
 function tourCam(st){ const c = st.cam, ph = isPhone(), o = {center:[c.at[1], c.at[0]], zoom:c.z - (ph ? .6 : 0), pitch:c.pitch, bearing:c.bearing};
   if (ph){ map.ml.jumpTo(o); return; }
@@ -4432,7 +4432,9 @@ function tourCam(st){ const c = st.cam, ph = isPhone(), o = {center:[c.at[1], c.
   /* and, when the selection summary is open on the right (the select-cells stop), between the two panels */
   const tr = $('#tour'), mw = $('#mapwrap'), pf = $('#profile'); let dx = 0;
   if (tr && mw){ const a = tr.getBoundingClientRect(), b = mw.getBoundingClientRect(), r = pf && pf.classList.contains('open') && pf.getClientRects().length ? pf.getBoundingClientRect() : null;
-    const L = Math.max(0, a.right - b.left + 12), R = r && r.left < b.right && r.right > b.left ? Math.max(0, b.right - r.left + 12) : 0; dx = (L - R) / 2; }
+    const L = Math.max(0, a.right - b.left + 12), R = r && r.left < b.right && r.right > b.left ? Math.max(0, b.right - r.left + 12) : 0; dx = (L - R) / 2;
+    /* the views were set on a phone (a map about 430 x 470): the open part of the map shows the same stretch of ground */
+    const ow = b.width - L - R, oh = b.height - 60; if (ow > 100 && oh > 100) o.zoom = (c.z - .6) + Math.log2(Math.min(ow / 430, oh / 470)); }
   /* a stop that selects cells: on a computer the cells are framed in the space the two panels leave, at the stop's tilt and direction */
   if (st.pick && S.box && S.box.cells.length && tr && mw){ const lv = S.box.lv, bd = new maplibregl.LngLatBounds(); S.box.cells.forEach(c => ring(lv, c).forEach(q => bd.extend([q[1], q[0]])));
     const a = tr.getBoundingClientRect(), b = mw.getBoundingClientRect(), r = pf && pf.classList.contains('open') && pf.getClientRects().length ? pf.getBoundingClientRect() : null;

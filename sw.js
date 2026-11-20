@@ -21,8 +21,9 @@
    atc-v11: the same, with the tour views matched to Casey's screenshots.
    atc-v12: the same, with tour layers kept out of the address and the ?cam readout.
    atc-v13: the same, with Casey's tour views, one layer per stop and maintained landscape labels.
-   atc-v14: the same, with the select stop framed on computers and a vista photo opened on the vistas stop. */
-const VER = 'atc-v14';
+   atc-v14: the same, with the select stop framed on computers and a vista photo opened on the vistas stop.
+   atc-v15: the same, with the tour's popup leaving the view still and computers showing the phone views' ground. */
+const VER = 'atc-v15';
 const OFF = 'atoffline-1';          /* filled by Save for offline; never cleared here */
 const LIVE = 'atlive-1';            /* last copy of the trail line, mile points and point layers (shelters, campsites...) */
 const DATA = 'https://grid.trailassessment.org';   /* the data site: /data/ and /images/birds/ */
