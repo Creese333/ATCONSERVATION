@@ -3039,7 +3039,7 @@ $('#jerrybtn').addEventListener('click', jerryAsk);
 { let ct; map.on('moveend', () => { clearTimeout(ct); ct = setTimeout(cultVizRefresh, 150); }); }
 
 $('#levels').innerHTML = '<button type="button" class="lvh" aria-expanded="false"><span class="lvt">Cell size</span><i aria-hidden="true"></i></button>' + [['auto','Auto','',' fits the zoom'],['wheel','49',' sq mi',' 31,360 ac'],['cog','7',' sq mi',' 4,480 ac'],['hex','1',' sq mi',' 640 ac']].map(x => `<button type="button" data-lv="${x[0]}"><span class="lvn">${x[1]}<span class="u">${x[2]}</span></span><span class="lvac">${x[3]}</span></button>`).join('');
-$('#levels').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.classList.contains('lvh')){ const o = !$('#levels').classList.contains('open'); $('#levels').classList.toggle('open', o); b.setAttribute('aria-expanded', o); return; } S.level = b.dataset.lv; $('#levels').classList.remove('open'); $('#levels .lvh').setAttribute('aria-expanded', 'false'); redraw(); });
+$('#levels').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.classList.contains('lvh')){ const o = !$('#levels').classList.contains('open'); $('#levels').classList.toggle('open', o); b.setAttribute('aria-expanded', o); if (o) closeTools(); return; } S.level = b.dataset.lv; $('#levels').classList.remove('open'); $('#levels .lvh').setAttribute('aria-expanded', 'false'); redraw(); });
 $('#basesel').innerHTML = BASEDEF.map(b => `<option value="${b[0]}">${b[1]}</option>`).join(''); $('#basesel').value = S.base;
 function baseSync(){ $('#map').style.background = DARKBASE[S.base] ? '#142235' : '#DDE3DC'; trailStyle(); }
 function setBase(k){ if (!BASES[k] || k === S.base) return; S.base = k; map.setBase(k);
@@ -3413,7 +3413,9 @@ $('#layerspanel').innerHTML = `<label><input type="checkbox" id="stlines"${stOn 
   (l.id === 'mland' ? `<div class="lk" id="mlkey" hidden>${[['Meadow/Field','Meadow or field'],['Agricultural Crop/Pasture','Farm field or pasture'],['Bald','Bald']].map(k => `<div><i style="background:${MLCOL[k[0]]}"></i><span>${k[1]}</span></div>`).join('')}</div>` : '') + (l.id === 'lands' ? `<div class="lk" id="landkey" hidden>${LANDKEY.map(k => `<div><i style="background:${k[2]}"></i><span>${k[1]}</span></div>`).join('')}</div>` : '')).join('') +
   '<p>State lines: APPA AT_States layer. Maintained landscapes: A.T. facilities inventory. The other layers load live from the National Park Service and Appalachian Trail Conservancy map services.</p>';
 $('#layerspanel').addEventListener('change', e => { const l = LIVE.find(x => x.id === e.target.dataset.live); if (l) liveToggle(l, e.target.checked); });
-$('#layerstog').onclick = () => { const p = $('#layerspanel'); p.hidden = !p.hidden; $('#layerstog').setAttribute('aria-expanded', !p.hidden); };
+$('#layerstog').onclick = () => { const p = $('#layerspanel'); p.hidden = !p.hidden; $('#layerstog').setAttribute('aria-expanded', !p.hidden); if (!p.hidden) closeTools(); };
+/* one drop-down open at a time on phones: opening Layers or Cells closes the Map tools options */
+function closeTools(){ if (!document.body.classList.contains('ctlopen')) return; document.body.classList.remove('ctlopen'); const cb = $('#ctlbtn'); if (cb) cb.setAttribute('aria-expanded', 'false'); }
 { let lt; map.on('moveend', () => { clearTimeout(lt); lt = setTimeout(() => LIVE.forEach(l => { if (!l.on) return; if (l.bbox) liveLoad(l); else if (l.type === 'pt' && l.loaded){ liveDraw(l); } else labelSync(l); }), 350); }); }
 /* squared distance, in rough degrees, from a point to the trail line the page is drawing */
 function trailDist(la, lo){ const k = Math.cos(la * Math.PI / 180), lines = TRAIL.lines; let best = Infinity;
@@ -5246,6 +5248,11 @@ if (S.pendingExt === 'huc' && EXTQ.includes(S.q.id) && !EXTNO.includes(S.q.id)) 
     window.layersPlace = place;
     ly.addEventListener('click', e => { if (!e.target.closest('#layerstog')) return; const pn = $('#layerspanel'); if (document.body.classList.contains('stackui')) pn.style.top = Math.round(ly.getBoundingClientRect().bottom + 6) + 'px'; else pn.style.top = ''; });
     addEventListener('resize', () => setTimeout(place, 60)); addEventListener('load', () => setTimeout(place, 50)); setTimeout(place, 0); setTimeout(place, 600);
+    /* phones: measure the top row again whenever Map tools, Layers (its count appears as layers load) or the locate button
+       changes size, and once the fonts are in, so the section picker never runs under them */
+    { let rt = 0; const again = () => { clearTimeout(rt); rt = setTimeout(place, 20); };
+      if (window.ResizeObserver){ const ro = new ResizeObserver(again); [ly, $('#ctlbtn'), document.querySelector('.maplibregl-ctrl-top-right')].forEach(x => x && ro.observe(x)); }
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(again); }
     const pr = $('#profile'); if (pr) new MutationObserver(() => { setTimeout(place, 30); setTimeout(() => window.lvPlace && window.lvPlace(), 60); }).observe(pr, {attributes:true, attributeFilter:['class']});
     new MutationObserver(() => setTimeout(place, 30)).observe(document.body, {attributes:true, attributeFilter:['class']});
     document.addEventListener('click', e => { const p = $('#layerspanel'); if (p && !p.hidden && !e.target.closest('#layers')){ p.hidden = true; $('#layerstog').setAttribute('aria-expanded', 'false'); } }); } }
