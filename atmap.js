@@ -155,6 +155,13 @@ const BASEDEF = [
     'Map data: ' + OSMA + ', SRTM. Style: &copy; <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA)']]]
 ];
 
+/* ---------- 3D terrain ----------
+   Elevation from the AWS Terrain Tiles (Terrarium encoding, to zoom 14; the same source viewshed.html uses), through the tile
+   queue like the basemaps. Off until the 3D button is pressed; the hillshade under the cells shows only in 3D. */
+const DEM = {type:'raster-dem', encoding:'terrarium', tileSize:256, maxzoom:14, attribution:'Terrain: AWS Terrain Tiles',
+  tiles:[atq('https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png', 'dem')]};
+const EXAG = 1.4, PITCH3D = 60;
+
 /* ---------- drawing order ----------
    Empty marker layers split the style into slots, bottom to top. map.addLayer(spec, slot) puts a layer at the top of its slot. */
 const SLOTS = ['base', 'cells', 'lands', 'states', 'corr', 'trail', 'phdots', 'segs', 'sel', 'feat', 'top'];
@@ -175,10 +182,12 @@ class ATMap {
         sources[sid] = {type:'raster', tiles:s.tiles.map(t => atq(t, sid)), tileSize:s.tileSize || 256, maxzoom:s.maxzoom, attribution:p[1]}; }
       layers.push({id:'b-' + key + '-' + i, type:'raster', source:sid, layout:{visibility:'none'}, minzoom:o2.minzoom ? o2.minzoom - ZO : 0,
         paint:Object.assign({'raster-fade-duration':o2.sharp ? 350 : 200}, o2.paint || {})}); }));
+    sources.dem = DEM; sources.demhs = Object.assign({}, DEM, {tiles:[DEM.tiles[0].replace('#dem/', '#demhs/')]});   /* MapLibre draws better with separate sources for terrain and hillshade */
+    layers.push({id:'hillshade', type:'hillshade', source:'demhs', layout:{visibility:'none'}, paint:{'hillshade-exaggeration':.25, 'hillshade-shadow-color':'#2B3A2E', 'hillshade-highlight-color':'#FFFFFF'}});
     SLOTS.forEach(s => layers.push({id:'slot:' + s, type:'fill', source:'empty', paint:{'fill-opacity':0}}));
     this.ml = new ml.Map({container:this._el, style:{version:8, sources, layers},
       minZoom:(o.minZoom != null ? o.minZoom : 4) - ZO, maxZoom:(o.maxZoom != null ? o.maxZoom : 18) - ZO,
-      center:[-77.5, 39.5], zoom:5 - ZO, attributionControl:false, dragRotate:false, pitchWithRotate:false, touchPitch:false,
+      center:[-77.5, 39.5], zoom:5 - ZO, maxPitch:70, attributionControl:false, dragRotate:false, pitchWithRotate:false, touchPitch:false,
       boxZoom:false, maxTileCacheSize:600, fadeDuration:0});
     this.ml.touchZoomRotate.disableRotation(); this.ml.keyboard.disableRotation();
     this.attribution = new ml.AttributionControl({compact:false});
@@ -186,7 +195,9 @@ class ATMap {
     this.zoomControl = new ml.NavigationControl({showCompass:false});
     this.ml.addControl(this.zoomControl, 'top-left');
     { const z = this._el.querySelector('.maplibregl-ctrl-zoom-in'); if (z) z.parentNode.classList.add('zoomctl'); }   /* the page lays its control rows out beside it */
-    this.ml.on('style.load', () => { this._isReady = true; if (o.base) this.setBase(o.base); this._ready.splice(0).forEach(f => f()); });
+    this._3d = false;
+    this.ml.on('style.load', () => { try { this.ml.setSky({'sky-color':'#9DB8D3', 'horizon-color':'#DCE6EE', 'fog-color':'#DCE6EE', 'sky-horizon-blend':.6, 'horizon-fog-blend':.5, 'fog-ground-blend':.6}); } catch (e){}
+      this._isReady = true; if (o.base) this.setBase(o.base); this._ready.splice(0).forEach(f => f()); });
     /* the sharp imagery waits until the map stops */
     this.ml.on('movestart', () => { moving = true; });
     this.ml.on('moveend', () => { moving = false; still.splice(0).forEach(f => f()); });
@@ -207,7 +218,18 @@ class ATMap {
       const f = p[2] || {}, id = 'b-' + k + '-' + i, on = k === key && (this._offline ? !f.sharp && !f.online : !f.offline);
       if (this.ml.getLayer(id)) this.ml.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none'); })); }
   /* with no signal, imagery stops asking for the sharp pictures and stretches the saved trail-level tiles (zoom 14) instead */
-  offline(off){ this._offline = offline = !!off; if (this.base) this.setBase(this.base); }
+  offline(off){ this._offline = offline = !!off; if (off && this._3d) this.set3D(false, {animate:false}); if (this.base) this.setBase(this.base); this.ml.fire('view3d', {on:this._3d}); }
+  /* ---- 3D: terrain under everything, the map tilted; rotating and tilting allowed only in 3D. The flat map is north up, as before. ---- */
+  is3D(){ return this._3d; }
+  set3D(on, o){ on = !!on && !this._offline; if (on === this._3d) return this; this._3d = on; const m = this.ml, quick = o && o.animate === false;
+    if (on){ m.setTerrain({source:'dem', exaggeration:EXAG}); this.show('hillshade', true);
+      m.dragRotate.enable(); m.touchZoomRotate.enableRotation(); m.touchPitch.enable(); m.keyboard.enableRotation();
+      m.easeTo({pitch:PITCH3D, duration:quick ? 0 : 900}); }
+    else { m.dragRotate.disable(); m.touchZoomRotate.disableRotation(); m.touchPitch.disable(); m.keyboard.disableRotation();
+      const flat = () => { m.setTerrain(null); this.show('hillshade', false); };
+      if (quick){ m.jumpTo({pitch:0, bearing:0}); flat(); } else { m.easeTo({pitch:0, bearing:0, duration:700}); m.once('moveend', () => { if (!this._3d) flat(); }); } }
+    m.fire('view3d', {on}); return this; }
+  north(){ this.ml.easeTo({bearing:0, duration:500}); return this; }
   /* ---- layers ---- */
   addLayer(spec, slot){ if (this.ml.getLayer(spec.id)) return; this.ml.addLayer(spec, 'slot:' + (slot || 'top')); }
   removeLayer(id){ if (this.ml.getLayer(id)) this.ml.removeLayer(id); }

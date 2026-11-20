@@ -1,4 +1,4 @@
-/* Service worker for the A.T. Resource Grid on MapLibre (atconservation.com). Ported from AT-Resource-Grid's sw.js, version atgrid-v7.
+/* Service worker for ACT - Appalachian Conservation Tool (atconservation.com), the A.T. Resource Grid on MapLibre. Ported from AT-Resource-Grid's sw.js, version atgrid-v7.
    Opening the app: the saved copy of the page, its code and its data files is shown straight away, and a fresh copy is fetched
    in the background. If the page, its code or the grid changed, the app shows "A new version is ready".
    "Save for offline" (at the bottom of About the data) stores all the data files and the imagery tiles along the trail in a

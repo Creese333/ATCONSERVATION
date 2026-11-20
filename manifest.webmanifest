@@ -1,6 +1,6 @@
 {
-  "name": "A.T. Resource Grid",
-  "short_name": "A.T. Grid",
+  "name": "ACT - Appalachian Conservation Tool",
+  "short_name": "ACT",
   "description": "Land, vegetation, wildlife records and review priorities for the Appalachian Trail corridor, summarized on one nested grid.",
   "id": "/",
   "start_url": "/",

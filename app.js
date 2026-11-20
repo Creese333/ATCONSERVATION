@@ -2778,6 +2778,30 @@ map.on('locationerror', e => { if (!LOC.on) return; const denied = e.code === 1;
     const y = fit ? fit.top + (fit.bottom - fit.top - b.height) / 2 : Math.max(...rows.map(r => r.bottom)) + 8;
     d.style.marginTop = Math.max(10, Math.round(y - m.top)) + 'px'; };
   window.addEventListener('resize', place); setTimeout(place, 0); setTimeout(place, 1500); const ro = new ResizeObserver(place); ro.observe(document.body); { const c = document.getElementById('ctls'); if (c) ro.observe(c); } } /* 18 is the tile layers' own limit */
+/* ---------- 3D ----------
+   The 3D button tilts the map over the terrain; in 3D the map turns and tilts with two fingers (right-drag with a mouse), and
+   the compass turns it back to north. Flat when the app opens. Drawing a box levels the map first. On phones, where the zoom
+   buttons are hidden, the two buttons sit in the map's bottom left corner. */
+const V3 = {};
+map.ml.addControl({onAdd(){ const d = document.createElement('div'); d.className = 'maplibregl-ctrl maplibregl-ctrl-group v3ctl';
+  d.innerHTML = '<a href="#" role="button" class="v3btn" aria-pressed="false">3D</a>' +
+    '<a href="#" role="button" class="v3north" title="Turn the map to north" aria-label="Turn the map to north" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l4.5 9.5h-9z" fill="#F0605D"/><path d="M12 21.5l-4.5-9.5h9z" fill="currentColor"/></svg></a>';
+  V3.d = d; V3.btn = d.querySelector('.v3btn'); V3.n = d.querySelector('.v3north');
+  V3.btn.addEventListener('click', e => { e.preventDefault(); if (V3.btn.getAttribute('aria-disabled') === 'true') return; if (S.drawing) drawMode(false); map.set3D(!map.is3D()); });
+  V3.n.addEventListener('click', e => { e.preventDefault(); map.north(); });
+  return d; }, onRemove(){}}, 'top-left');
+function v3Sync(){ const on = map.is3D(), off = !!map._offline;
+  V3.btn.setAttribute('aria-pressed', on); V3.btn.setAttribute('aria-disabled', off && !on ? 'true' : 'false');
+  V3.btn.title = off ? 'No signal: 3D needs the terrain tiles' : on ? 'Back to the flat map' : 'Show the map in 3D, over the terrain';
+  V3.btn.setAttribute('aria-label', V3.btn.title); V3.n.hidden = !on; }
+function v3Place(){ if (!V3.d) return; const mc = map.getContainer(), z = mc.querySelector('.zoomctl'), side = !z || getComputedStyle(z).display === 'none';
+  const w = mc.querySelector(side ? '.maplibregl-control-container' : '.maplibregl-ctrl-top-left'); if (w && V3.d.parentNode !== w) w.appendChild(V3.d);
+  V3.d.classList.toggle('v3side', side); V3.d.style.top = '';
+  if (side){ /* just under the lowest map control (and the locate button), clear of them */ const m = mc.getBoundingClientRect(); let b = 0;
+    ['ctls', 'levels'].map(id => document.getElementById(id)).concat([mc.querySelector('.locctl')]).forEach(e => { if (e && e.offsetParent !== null){ const r = e.getBoundingClientRect(); if (r.width && r.bottom > m.top && r.top < m.top + m.height / 2) b = Math.max(b, r.bottom - m.top); } });
+    V3.d.style.top = Math.round(Math.max(10, b + 10)) + 'px'; } }
+map.ml.on('view3d', v3Sync); v3Sync(); v3Place(); addEventListener('resize', v3Place); [300, 1500].forEach(t => setTimeout(v3Place, t));
+map.ml.on('rotate', () => { V3.n.firstChild.style.transform = `rotate(${-map.ml.getBearing()}deg)`; });
 /* ---------- basemaps ----------
    Defined in atmap.js with the tile queue (each service a few tiles at a time, failed tiles asked again, NAIP Plus falling back
    to NAIP). Here: [key, name, -, dark], so a dark (imagery) basemap gets light outlines. */
@@ -3456,7 +3480,7 @@ map.on('moveend zoomend', trailHi); trailHi();
    On a phone the map fills most of the screen, so a one-finger drag on it must scroll the page.
    Two fingers move and zoom the map. Taps still select cells. Wide screens are not affected. */
 const TOUCHDEV = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-function mapGestures(){ const two = TOUCHDEV && VW() <= 860 && !document.body.classList.contains('stackui'); if (two) map.ml.cooperativeGestures.enable(); else map.ml.cooperativeGestures.disable(); map.dragging.enable(); }
+function mapGestures(){ const two = TOUCHDEV && VW() <= 860 && !document.body.classList.contains('stackui'); if (two) map.ml.cooperativeGestures.enable(); else map.ml.cooperativeGestures.disable(); map.dragging.enable(); v3Place(); }
 { const mc = map.getContainer(), hint = $('#maphint'); let sx = 0, sy = 0, ht = null;
   const showHint = () => { hint.classList.add('on'); clearTimeout(ht); ht = setTimeout(() => hint.classList.remove('on'), 1600); };
   const onTouch = e => { if (S.drawing){ if (e.cancelable) e.preventDefault(); return; } if (!(TOUCHDEV && VW() <= 860) || document.body.classList.contains('stackui')) return;
@@ -4336,7 +4360,7 @@ function describeText(){ const lv = S.box ? S.box.lv : S.cellLv, cells = S.box ?
   const uniq = a => [...new Set(a.filter(Boolean))], list = a => a.length < 3 ? a.join(' and ') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
   const clubs = uniq(cells.map(c => cat('club', L_.club[c]))), regs = uniq(cells.map(c => regionOf(L_.mi[c])));
   const out = [], wrap = s => s.replace(/(?![^\n]{1,100}$)([^\n]{1,100})\s/g, '$1\n');
-  out.push('A.T. Resource Grid: summary of ' + (N === 1 ? `one ${LV[lv].name} cell (${L_.id[cells[0]]})` : `${N} ${LV[lv].name} cells`));
+  out.push('ACT - Appalachian Conservation Tool: summary of ' + (N === 1 ? `one ${LV[lv].name} cell (${L_.id[cells[0]]})` : `${N} ${LV[lv].name} cells`));
   out.push(`Generated ${localDay()} from grid.trailassessment.org`, '');
   out.push(wrap(`${N === 1 ? 'This cell is' : 'These cells are'} ${N === 1 || mi0 === mi1 ? `near A.T. mile ${fmt(mi0, 0)}` : `between A.T. miles ${fmt(mi0, 0)} and ${fmt(mi1, 0)}`}${regs.length ? `, in the ${list(regs)} ${regs.length === 1 ? 'region' : 'regions'}` : ''}${clubs.length ? `, maintained by ${list(clubs)}` : ''}.`), '');
   DESC.forEach(([qid, ids]) => { const q = Q.find(x => x.id === qid); if (!q) return; if (qid === 'pri' && !JERRY) return;
@@ -4365,7 +4389,7 @@ const TOURS = {
    steps:[
     {t:'Open land on a mountain trail', q:'rest', m:'grass', lv:'wheel', view:'trail', img:{f:'at-field-sunset', c:'The A.T. crossing an open field at sunset', a:'A post with a white blaze beside a mowed path through a grassy field, with a tall pine, bare trees and low mountains under an orange and gray sunset sky'},
      x:'The A.T. is a mountain footpath, but it also crosses farms, meadows and grassy balds. About 5,000 acres of open land are maintained along the corridor, including 986 acres on 31 farms under agricultural permits. Darker cells score higher for grassland restoration; stars mark active projects.'},
-    {t:'Where the potential is highest', q:'rest', m:'grass', lv:'wheel', pick:{top:8}, img:{f:'dashboard-grassland-example', c:'The dashboard’s grassland scores for 1 sq mi cells along the A.T. through the Cumberland Valley, Pennsylvania: darker red cells score higher', a:'A map of hexagon cells colored from pale green to dark red along the white line of the Appalachian Trail, with a legend of grassland scores', by:'Map: A.T. Resource Grid'},
+    {t:'Where the potential is highest', q:'rest', m:'grass', lv:'wheel', pick:{top:8}, img:{f:'dashboard-grassland-example', c:'The dashboard’s grassland scores for 1 sq mi cells along the A.T. through the Cumberland Valley, Pennsylvania: darker red cells score higher', a:'A map of hexagon cells colored from pale green to dark red along the white line of the Appalachian Trail, with a legend of grassland scores', by:'Map: ACT - Appalachian Conservation Tool'},
      x:'These {n} cells score highest for grassland restoration, from {range}. They’re in the {regionlist}, where the trail leaves the ridges for valleys and farm country. Open fields, suitable soils and nearby grassland species overlap here, making them strong candidates for future projects.'},
     {t:'Shays’ Rebellion site, Massachusetts', q:'rest', m:'grass', lv:'hex', pick:{near:[42.14697, -73.38067], km:.01}, sites:[4], zoom:14,
      x:'At the site of the last battle of Shays’ Rebellion (1787), in the Housatonic Valley, six acres of former corn and soybean fields on A.T. lands were seeded in November 2026 with 47 grasses, sedges and wildflowers native to Berkshire County. Grassland score here: {range}.'},
@@ -4648,7 +4672,7 @@ function exportData(){ const lv = S.box ? S.box.lv : S.cellLv, cells = S.box ? S
         x.t === 'nr' && x.a.refnum ? {npgallery_url:'https://npgallery.nps.gov/AssetDetail/NRIS/' + x.a.refnum} : {}, x.a.osm ? {openstreetmap_url:'https://www.openstreetmap.org/' + x.a.osm} : {}, x.t === 'cem' ? {find_a_grave_url:histFagUrl(x)} : {})); })); }
   if (S.ext === 'huc'){ out.cells = out.cells.map(r => Object.fromEntries(Object.entries(r).filter(([k]) => !/^(veg|nlcd|unique|land|feat)_/.test(k)))); out.species = out.species.filter(r => r.group !== 'Priority species'); out.veg = []; out.land = []; out.features = []; out.layers = []; out.restoration = []; }
   const ab = (k, x) => out.about.push({item:k, value:x});
-  ab('Source', 'A.T. Resource Grid dashboard'); ab('Exported', localDay()); ab('iNaturalist and eBird data run', D.run);
+  ab('Source', 'ACT - Appalachian Conservation Tool dashboard'); ab('Exported', localDay()); ab('iNaturalist and eBird data run', D.run);
   ab('Extent', S.ext === 'huc' ? 'HUC10 watershed: every grid cell in the HUC10 shell. ' + HUCONLY + ' They are left out.' : 'A.T. corridor grid cells');
   ab('Cells exported', cells.length); ab('Cell size', LV[lv].name); ab('Section of trail', secName()); ab('Measure on screen', S.m.label);
   ab('Selection', S.box ? (S.box.within ? `Every ${LV[S.box.lv].name} cell inside the ${LV[S.box.within[0]].name} cell ${D.levels[S.box.within[0]].id[S.box.within[1]]}`
@@ -4918,7 +4942,7 @@ function soilBox(lv, cells){ if (!D.themes.soil) return '';
   b += `<p class="none" style="font-size:13.5px;margin-top:8px">From the NRCS soil survey (gSSURGO). Figures are averages of the ${nCells(cs.length)} with soil data, each cell counting equally; trail ratings use the ${nCells(rated.length)} with rated soils. Soil data covers ${soilPct(v('SOIL_COV'))} of the cells on average. The Cell by cell table lists each cell's values for the question you're on.</p>`;
   return b + '</div>'; }
 /* drawing the box */
-function drawMode(on){ S.drawing = on; $('#mapwrap').classList.toggle('drawing', on); $('#boxbtn').setAttribute('aria-pressed', on); $('#boxdraw').hidden = true;
+function drawMode(on){ if (on && map.is3D()) map.set3D(false, {animate:false}); S.drawing = on; $('#mapwrap').classList.toggle('drawing', on); $('#boxbtn').setAttribute('aria-pressed', on); $('#boxdraw').hidden = true;
   const hint = $('#maphint'); if (on){ map.dragging.disable(); tip.remove(); hint.textContent = 'Drag on the map to draw a box'; hint.classList.add('on'); }
   else { mapGestures(); hint.classList.remove('on'); setTimeout(() => { hint.textContent = 'Use two fingers to move the map'; }, 250); } }
 $('#boxbtn').onclick = () => { if (S.picking) pickMode(false); drawMode(!S.drawing); };

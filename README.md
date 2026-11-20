@@ -1,6 +1,6 @@
-# A.T. Resource Grid on MapLibre
+# ACT - Appalachian Conservation Tool
 
-**[atconservation.com](https://atconservation.com)** is a copy of the [A.T. Resource Grid](https://grid.trailassessment.org) dashboard ([Creese333/AT-Resource-Grid](https://github.com/Creese333/AT-Resource-Grid)), rebuilt on the [MapLibre GL JS](https://maplibre.org) map engine (version 5.24.0) in place of Leaflet.
+**[atconservation.com](https://atconservation.com)**, ACT, is a copy of the [A.T. Resource Grid](https://grid.trailassessment.org) dashboard ([Creese333/AT-Resource-Grid](https://github.com/Creese333/AT-Resource-Grid)), rebuilt on the [MapLibre GL JS](https://maplibre.org) map engine (version 5.24.0) in place of Leaflet.
 
 > The summaries are generalized to the grid and are for screening and planning. They are not site assessments, boundary determinations or a trail condition survey.
 
@@ -28,6 +28,8 @@ All data stays in AT-Resource-Grid and is rebuilt there by its workflows. This s
 - **Layers** are added once the style is in (`style.load`), never on `load`, which waits for every first tile and never fires when a basemap service is down. The loader makes the map and starts app.js only after the style is in.
 - **Cells** are one GeoJSON source per cell size, colored through feature-state, so restyling never rebuilds geometry.
 - **Basemap tiles** go through the `atq://` protocol in atmap.js. Each service gets a few requests at a time; a failed tile is asked for again a little later each time; NAIP Plus falls back to plain NAIP. A tile that still failed is asked for again with `map.refreshTiles` 30 seconds later and when the connection comes back, so holes close themselves (MapLibre does not retry a failed raster tile on its own: maplibre-gl-js issue #8612). The sharp NAIP pictures are asked for only once the map stops moving.
+
+- **3D.** The 3D button (under the zoom buttons; under the map controls on phones) tilts the map over terrain from the AWS Terrain Tiles (Terrarium, the same source as viewshed.html), with a light hillshade, through the same tile queue. In 3D the map turns and tilts with two fingers or a right-drag, and the compass turns it back to north. The map opens flat; drawing a box levels it first; with no signal 3D is off.
 
 ## Port status
 
