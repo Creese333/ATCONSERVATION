@@ -147,9 +147,7 @@ const BASEDEF = [
   ['hires', 'USGS imagery, highest resolution', 1, imgParts(sharp(NAIPPX, 'RSP_CubicConvolution', 94), NAIPPA, 15)],
   ['naip', 'NAIP aerial (USDA)', 1, imgParts(sharp(NAIPX, 'RSP_BilinearInterpolation', 92), NAIPA, 16)],
   ['img', 'USGS imagery', 1, imgParts(sharp(NAIPX, 'RSP_BilinearInterpolation', 92), ATTR, 17)],
-  ['imgl', 'USGS imagery with labels', 1, [[tnm('USGSImageryTopo'), ATTR]]],
   ['relief', 'USGS shaded relief', 0, [[tnm('USGSShadedReliefOnly'), ATTR]]],
-  ['hydro', 'USGS hydrography', 0, [[tnm('USGSHydroCached'), ATTR]]],
   ['osm', 'OpenStreetMap', 0, [[{tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], maxzoom:19}, OSMA]]],
   ['otm', 'OpenTopoMap', 0, [[{tiles:['a', 'b', 'c'].map(s => 'https://' + s + '.tile.opentopomap.org/{z}/{x}/{y}.png'), maxzoom:17},
     'Map data: ' + OSMA + ', SRTM. Style: &copy; <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA)']]]
