@@ -4397,7 +4397,7 @@ const TOURS = {
      x:'Cells off, under Map tools, clears the colored grid so you can read the land itself. With Vistas switched on, the viewpoints along Iron Mountain in Tennessee appear, out to the Shady Valley overlook. Tap any symbol for its name.'},
     {t:'Maintained landscapes', q:'feat', m:'mlac', lv:'hex', d3:true, cam:{at:[36.1143, -82.0605], z:13.29, pitch:55, bearing:49}, cells:false, layers:['mland'], hl:['#layerstog'],
      x:'The grassy balds of the Roan Highlands are kept open by active management, and the Maintained landscapes layer outlines and names them. Jane Bald and Grassy Ridge are in front, and the ridge runs on toward Little Hump and Hump Mountain.'},
-    {t:'Vistas on the Presidential Range', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[44.2316, -71.3571], z:11.44, pitch:57, bearing:20}, cells:false, layers:['vistas'], hl:['#layerstog'],
+    {t:'Vistas on the Presidential Range', q:'feat', m:'vist', lv:'hex', pop:'vistas', d3:true, cam:{at:[44.2316, -71.3571], z:11.44, pitch:57, bearing:20}, cells:false, layers:['vistas'], hl:['#layerstog'],
      x:'Mount Washington and the Presidential Range hold some of the steepest relief on the trail. The Vistas layer marks the viewpoints recorded along the A.T., from summits to ledges and open areas. Any layer turns on and off the same way, from Layers.'},
     {t:'Select cells', q:'feat', m:'mlac', lv:'hex', pick:{near:[36.6566, -81.5352], km:2.2}, d3:true, cam:{at:[36.6671, -81.5077], z:12.34, pitch:60, bearing:38}, cells:true, tools:1, layers:['mland'], hl:['#pickbtn', '#boxbtn'],
      x:'Pick cells and Select area, under Map tools, choose cells to compare. These {n} cells around Thomas Knob Shelter in the Grayson Highlands are selected; each holds {range} of maintained landscapes.'},
@@ -4416,10 +4416,32 @@ function tourCtl(st){ const ph = isPhone();
   if (window.layersPlace) layersPlace(); if (window.lvPlace) lvPlace();   /* the control rows, laid out again for what is shown now */
   document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl'));
   (st.hl || []).forEach(s => { const e = document.querySelector(s); if (e && e.getClientRects().length){ void e.offsetWidth; e.classList.add('tourhl'); } }); }   /* shown (offsetParent is null for the fixed phone controls) */
+/* pop: once the camera has landed and the layer has loaded, open the popup of the feature with a photo nearest the middle
+   of the view (the vistas stop shows that vistas carry photos) */
+function tourPop(st){ const l = LIVE.find(x => x.id === st.pop), k = TOUR.k, id = TOUR.id, t0 = Date.now(); if (!l) return;
+  const hasPh = p => { for (let i = 1; i <= 10; i++) if (/^https?:\/\//i.test(String(p['Photo' + i] || '').trim())) return true; return false; };
+  const go = () => { if (TOUR.id !== id || TOUR.k !== k) return; if ((!l.loaded || map.ml.isMoving()) && Date.now() - t0 < 12000) return setTimeout(go, 300);
+    const c = map.ml.getCenter(), b = map.getBounds(); let best = null, bd = Infinity;
+    (l.feats || []).forEach(f => { const p = f.properties || {}, q = f.geometry.coordinates; if (!hasPh(p) || !b.contains(G.ll(q[1], q[0]))) return;
+      const d = Math.hypot(q[0] - c.lng, (q[1] - c.lat) * 1.4); if (d < bd){ bd = d; best = f; } });
+    if (best){ const q = best.geometry.coordinates; featOpen(l, best.properties, G.ll(q[1], q[0]), 14); } };
+  setTimeout(go, 600); }
 function tourCam(st){ const c = st.cam, ph = isPhone(), o = {center:[c.at[1], c.at[0]], zoom:c.z - (ph ? .6 : 0), pitch:c.pitch, bearing:c.bearing};
   if (ph){ map.ml.jumpTo(o); return; }
   /* beside the tour panel, the place is centered in the part of the map the panel leaves clear */
-  const tr = $('#tour'), mw = $('#mapwrap'); let dx = 0; if (tr && mw){ const a = tr.getBoundingClientRect(), b = mw.getBoundingClientRect(); dx = Math.max(0, (a.right - b.left + 12) / 2); }
+  /* and, when the selection summary is open on the right (the select-cells stop), between the two panels */
+  const tr = $('#tour'), mw = $('#mapwrap'), pf = $('#profile'); let dx = 0;
+  if (tr && mw){ const a = tr.getBoundingClientRect(), b = mw.getBoundingClientRect(), r = pf && pf.classList.contains('open') && pf.getClientRects().length ? pf.getBoundingClientRect() : null;
+    const L = Math.max(0, a.right - b.left + 12), R = r && r.left < b.right && r.right > b.left ? Math.max(0, b.right - r.left + 12) : 0; dx = (L - R) / 2; }
+  /* a stop that selects cells: on a computer the cells are framed in the space the two panels leave, at the stop's tilt and direction */
+  if (st.pick && S.box && S.box.cells.length && tr && mw){ const lv = S.box.lv, bd = new maplibregl.LngLatBounds(); S.box.cells.forEach(c => ring(lv, c).forEach(q => bd.extend([q[1], q[0]])));
+    const a = tr.getBoundingClientRect(), b = mw.getBoundingClientRect(), r = pf && pf.classList.contains('open') && pf.getClientRects().length ? pf.getBoundingClientRect() : null;
+    const L = Math.max(0, a.right - b.left) + 24, R = (r && r.left < b.right ? Math.max(0, b.right - r.left) : 0) + 24, T = Math.max(90, a.bottom - b.top + 20);
+    /* beside the tour panel or under it, whichever leaves the larger open area */
+    const side = (b.width - L - R) * (b.height - 130), under = (b.width - 24 - R) * (b.height - T - 40);
+    const pad = side >= under ? {left:L, right:R, top:90, bottom:40} : {left:24, right:R, top:T, bottom:40};
+    const cam = map.ml.cameraForBounds(bd, {padding:pad, bearing:c.bearing, pitch:c.pitch});
+    if (cam){ map.ml.flyTo(Object.assign({}, o, cam, {bearing:c.bearing, pitch:c.pitch, zoom:Math.min(cam.zoom, o.zoom + 1), duration:2600, essential:true})); return; } }
   map.ml.flyTo(Object.assign(o, {offset:[dx, 0], duration:2600, essential:true})); }
 let tourSites = null;
 const STAR = s => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>`;
@@ -4461,6 +4483,7 @@ function tourGo(k){ const T = TOURS[TOUR.id]; if (!T) return;  TOUR.k = Math.max
   if (ph) map.invalidateSize();
   let bd = null; if (cells.length){ bd = G.bounds([]); cells.forEach(c => ring(lv, c).forEach(p => bd.extend(p))); bd = bd.pad(st.pick.top ? .05 : .6); }
   else if (st.view === 'trail') bd = TRAIL.bounds(); else if (Array.isArray(st.view)) bd = G.bounds(st.view);
+  if (POP) POP.remove(); if (st.pop) tourPop(st);
   if (st.cam){ map.stop(); tourCam(st); }
   else if (ph){ map.stop(); if (st.zoom && cells.length) map.setView(st.pick.near, st.zoom, {animate:false}); else if (bd) map.fitBounds(bd, {animate:false, maxZoom:12}); }
   else { /* a wide map view sits in the middle of the map; it slides east only on a window too narrow to keep the trail
