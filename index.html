@@ -201,13 +201,21 @@ button.tvapply:disabled{background:none;color:#8A97A6;border-color:#4A6182;curso
 .maplibregl-ctrl-group a:hover,.maplibregl-ctrl-group button:not(:disabled):hover{background:var(--ground) !important}
 .maplibregl-ctrl-group button .maplibregl-ctrl-icon{filter:invert(1) brightness(1.6)}
 .locctl a{display:flex !important;align-items:center;justify-content:center;cursor:pointer}
-/* the 3D button and, in 3D, the compass */
-.v3ctl a{width:40px !important;height:40px !important;line-height:40px !important;display:flex !important;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;text-decoration:none;cursor:pointer}
-.v3ctl a[hidden]{display:none !important}.v3ctl a+a{border-top:1px solid var(--line)}
-.v3ctl a[aria-pressed="true"]{background:#1E6FD9 !important}.v3ctl a[aria-disabled="true"]{color:#60738B;cursor:default}
-.v3ctl svg{width:22px;height:22px;display:block}
-/* where the zoom buttons are hidden, the 3D buttons sit at the right just under the map controls (placed by v3Place) */
-.v3ctl.v3side{position:absolute;right:10px;margin:0 !important}
+/* the 3D button, after the basemap selector, and in 3D the compass beside it */
+#v3{position:static !important;display:flex;align-self:stretch;padding:0;overflow:hidden;min-height:29px}
+#v3 button{background:none;border:0;color:#fff;font:700 14px/1 var(--body);min-width:40px;padding:0 9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#v3 button+button{border-left:1px solid var(--line)}#v3 button[hidden]{display:none}
+#v3 button[aria-pressed="true"]{background:#1E6FD9}#v3 button[aria-disabled="true"]{color:#60738B;cursor:default}
+#v3 svg{width:20px;height:20px;display:block}
+body.stackui #v3{border-radius:999px;background:#0F1C2Ee6;border-color:#3A4E68}
+/* phones: cell size, basemap and 3D share the width of the map, the drop-downs taking what the 3D button leaves */
+body.stackui #lvbar{width:calc(100vw - 20px);max-width:520px;box-sizing:border-box}
+body.stackui #lvbar>#levels.lvdock,body.stackui #lvbar>#base.bsdock{flex:1 1 0;width:auto !important;min-width:0;max-width:none !important}
+body.stackui #lvbar>#v3{flex:none}
+/* a tight row trims the drop-down labels instead of running them into their arrows */
+body.stackui #lvbar>#levels.lvdock>button:first-child{min-width:0;max-width:100%;overflow:hidden;display:flex;align-items:center}
+body.stackui #lvbar .lvt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.stackui #lvbar .lvt+i{flex:none}
 /* the full name where it fits; ACT on phones */
 @media (max-width:640px){ header h1 .h1more{display:none} }
 .locctl a svg{width:18px;height:18px;display:block}

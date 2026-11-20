@@ -1,6 +1,6 @@
 # ACT - Appalachian Conservation Tool
 
-**[atconservation.com](https://atconservation.com)**, ACT, is a copy of the [A.T. Resource Grid](https://grid.trailassessment.org) dashboard ([Creese333/AT-Resource-Grid](https://github.com/Creese333/AT-Resource-Grid)), rebuilt on the [MapLibre GL JS](https://maplibre.org) map engine (version 5.24.0) in place of Leaflet.
+**[act.atconservation.com](https://act.atconservation.com)**, ACT, is a copy of the [A.T. Resource Grid](https://grid.trailassessment.org) dashboard ([Creese333/AT-Resource-Grid](https://github.com/Creese333/AT-Resource-Grid)), rebuilt on the [MapLibre GL JS](https://maplibre.org) map engine (version 5.24.0) in place of Leaflet.
 
 > The summaries are generalized to the grid and are for screening and planning. They are not site assessments, boundary determinations or a trail condition survey.
 
@@ -18,7 +18,7 @@ All data stays in AT-Resource-Grid and is rebuilt there by its workflows. This s
 | `inat.js` | iNaturalist live lookup for a selected cell |
 | `sw.js` | Service worker: opens from saved copies, "A new version is ready", Save for offline |
 | `manifest.webmanifest`, `images/` | App icons, launch screens and tour photos |
-| `CNAME` | `atconservation.com` |
+| `CNAME` | `act.atconservation.com` |
 
 `data/`, `scripts/` and `.github/workflows/` hold only a note each, so the folders exist for uploads.
 

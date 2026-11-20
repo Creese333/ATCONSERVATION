@@ -2779,29 +2779,22 @@ map.on('locationerror', e => { if (!LOC.on) return; const denied = e.code === 1;
     d.style.marginTop = Math.max(10, Math.round(y - m.top)) + 'px'; };
   window.addEventListener('resize', place); setTimeout(place, 0); setTimeout(place, 1500); const ro = new ResizeObserver(place); ro.observe(document.body); { const c = document.getElementById('ctls'); if (c) ro.observe(c); } } /* 18 is the tile layers' own limit */
 /* ---------- 3D ----------
-   The 3D button tilts the map over the terrain; in 3D the map turns and tilts with two fingers (right-drag with a mouse), and
-   the compass turns it back to north. Flat when the app opens. Drawing a box levels the map first. On phones, where the zoom
-   buttons are hidden, the two buttons sit in the map's bottom left corner. */
+   The 3D button, right after the basemap selector, tilts the map over the terrain; in 3D the map turns and tilts with two
+   fingers (right-drag with a mouse), and the compass beside the button turns it back to north. Flat when the app opens.
+   Drawing a box levels the map first. */
 const V3 = {};
-map.ml.addControl({onAdd(){ const d = document.createElement('div'); d.className = 'maplibregl-ctrl maplibregl-ctrl-group v3ctl';
-  d.innerHTML = '<a href="#" role="button" class="v3btn" aria-pressed="false">3D</a>' +
-    '<a href="#" role="button" class="v3north" title="Turn the map to north" aria-label="Turn the map to north" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l4.5 9.5h-9z" fill="#F0605D"/><path d="M12 21.5l-4.5-9.5h9z" fill="currentColor"/></svg></a>';
-  V3.d = d; V3.btn = d.querySelector('.v3btn'); V3.n = d.querySelector('.v3north');
-  V3.btn.addEventListener('click', e => { e.preventDefault(); if (V3.btn.getAttribute('aria-disabled') === 'true') return; if (S.drawing) drawMode(false); map.set3D(!map.is3D()); });
-  V3.n.addEventListener('click', e => { e.preventDefault(); map.north(); });
-  return d; }, onRemove(){}}, 'top-left');
+{ const d = document.createElement('div'); d.id = 'v3'; d.className = 'mapctl';
+  d.innerHTML = '<button type="button" id="v3btn" aria-pressed="false">3D</button>' +
+    '<button type="button" id="v3north" title="Turn the map to north" aria-label="Turn the map to north" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l4.5 9.5h-9z" fill="#F0605D"/><path d="M12 21.5l-4.5-9.5h9z" fill="currentColor"/></svg></button>';
+  V3.d = d; V3.btn = d.querySelector('#v3btn'); V3.n = d.querySelector('#v3north');
+  const b = document.getElementById('base'); if (b) b.after(d); else document.getElementById('ctlrow2').appendChild(d);
+  V3.btn.addEventListener('click', () => { if (V3.btn.getAttribute('aria-disabled') === 'true') return; if (S.drawing) drawMode(false); map.set3D(!map.is3D()); });
+  V3.n.addEventListener('click', () => map.north()); }
 function v3Sync(){ const on = map.is3D(), off = !!map._offline;
   V3.btn.setAttribute('aria-pressed', on); V3.btn.setAttribute('aria-disabled', off && !on ? 'true' : 'false');
   V3.btn.title = off ? 'No signal: 3D needs the terrain tiles' : on ? 'Back to the flat map' : 'Show the map in 3D, over the terrain';
   V3.btn.setAttribute('aria-label', V3.btn.title); V3.n.hidden = !on; }
-function v3Place(){ if (!V3.d) return; const mc = map.getContainer(), z = mc.querySelector('.zoomctl'), side = !z || getComputedStyle(z).display === 'none';
-  const w = mc.querySelector(side ? '.maplibregl-control-container' : '.maplibregl-ctrl-top-left'); if (w && V3.d.parentNode !== w) w.appendChild(V3.d);
-  V3.d.classList.toggle('v3side', side); V3.d.style.top = '';
-  if (side){ /* just under the lowest map control (and the locate button), clear of them */ const m = mc.getBoundingClientRect(); let b = 0;
-    const els = [...document.querySelectorAll('#ctls, #ctls *, #levels, #levels *')].concat([mc.querySelector('.locctl')]);   /* every control row, wherever its box ends */
-    els.forEach(e => { if (e && e.offsetParent !== null){ const r = e.getBoundingClientRect(); if (r.width && r.bottom > m.top && r.top < m.top + m.height / 2) b = Math.max(b, r.bottom - m.top); } });
-    V3.d.style.top = Math.round(Math.max(10, b + 10)) + 'px'; } }
-map.ml.on('view3d', v3Sync); v3Sync(); v3Place(); addEventListener('resize', v3Place); [300, 1500].forEach(t => setTimeout(v3Place, t));
+map.ml.on('view3d', v3Sync); v3Sync();
 map.ml.on('rotate', () => { V3.n.firstChild.style.transform = `rotate(${-map.ml.getBearing()}deg)`; });
 /* ---------- basemaps ----------
    Defined in atmap.js with the tile queue (each service a few tiles at a time, failed tiles asked again, NAIP Plus falling back
@@ -3481,7 +3474,7 @@ map.on('moveend zoomend', trailHi); trailHi();
    On a phone the map fills most of the screen, so a one-finger drag on it must scroll the page.
    Two fingers move and zoom the map. Taps still select cells. Wide screens are not affected. */
 const TOUCHDEV = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-function mapGestures(){ const two = TOUCHDEV && VW() <= 860 && !document.body.classList.contains('stackui'); if (two) map.ml.cooperativeGestures.enable(); else map.ml.cooperativeGestures.disable(); map.dragging.enable(); v3Place(); }
+function mapGestures(){ const two = TOUCHDEV && VW() <= 860 && !document.body.classList.contains('stackui'); if (two) map.ml.cooperativeGestures.enable(); else map.ml.cooperativeGestures.disable(); map.dragging.enable(); }
 { const mc = map.getContainer(), hint = $('#maphint'); let sx = 0, sy = 0, ht = null;
   const showHint = () => { hint.classList.add('on'); clearTimeout(ht); ht = setTimeout(() => hint.classList.remove('on'), 1600); };
   const onTouch = e => { if (S.drawing){ if (e.cancelable) e.preventDefault(); return; } if (!(TOUCHDEV && VW() <= 860) || document.body.classList.contains('stackui')) return;
@@ -5220,7 +5213,7 @@ if (S.pendingExt === 'huc' && EXTQ.includes(S.q.id) && !EXTNO.includes(S.q.id)) 
       if (r1.offsetWidth !== w1){ w1 = r1.offsetWidth; } }).observe(r1); }
     /* cell size and basemap: two drop-downs of the same size side by side, beside the zoom-out button (phones: under the top row) */
     const lvEl = $('#levels'), bsEl = $('#base'), bar = document.createElement('div'); bar.id = 'lvbar'; wrap.appendChild(bar);
-    if (lvEl){ bar.appendChild(lvEl); lvEl.classList.add('lvdock'); } if (bsEl){ bar.appendChild(bsEl); bsEl.classList.add('bsdock'); }
+    if (lvEl){ bar.appendChild(lvEl); lvEl.classList.add('lvdock'); } if (bsEl){ bar.appendChild(bsEl); bsEl.classList.add('bsdock'); } if (V3.d) bar.appendChild(V3.d);   /* the 3D button stays right after the basemap */
     const lvHead = () => { const t = $('#levels .lvt'); if (!t) return; const lv = typeof dispLevel === 'function' ? dispLevel() : null, nm = {wheel:'49', cog:'7', hex:'1'}[lv] || '';
       const ac = {wheel:'31,360', cog:'4,480', hex:'640'}[lv] || '';   /* acres in one cell: 640 per square mile */
       t.innerHTML = esc((S.level === 'auto' ? 'Auto' + (nm ? ' · ' + nm : '') : nm) + ' sq mi') + (ac ? `<span class="lvac"> · ${ac} ac</span>` : ''); };
