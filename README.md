@@ -15,7 +15,6 @@ All data stays in AT-Resource-Grid and is rebuilt there by its workflows. This s
 | `index.html` | The page: layout, styles, the loading screen and the loader (grid data, MapLibre, the map, then the app) |
 | `atmap.js` | The map engine: the MapLibre map, basemaps, the basemap tile queue, drawing order, geometry helpers |
 | `app.js` | The dashboard: questions, measures, cells, legend, side panel, charts, selection, export |
-| `home.html` | The @Conservation home page: a 3D model of the trail at Harpers Ferry with the spotted lanternfly records appearing year by year, and a button to ACT |
 | `inat.js` | iNaturalist live lookup for a selected cell |
 | `sw.js` | Service worker: opens from saved copies, "A new version is ready", Save for offline |
 | `manifest.webmanifest`, `images/` | App icons, launch screens and tour photos |
