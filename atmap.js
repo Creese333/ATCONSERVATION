@@ -143,12 +143,11 @@ const UNDER = {spec:tnm('USGSImageryOnly'), id:'imgunder'}, UNDER14 = {spec:tnm(
    tiles Save for offline keeps), and the sharp picture on top from naipFrom in */
 const imgParts = (sh, attr, from) => [[UNDER, attr, {online:1}], [UNDER14, attr, {offline:1}], [sh, attr, {minzoom:from, sharp:1}]];
 const BASEDEF = [
-  ['topo', 'USGS topo', 0, [[tnm('USGSTopo'), ATTR, {paint:{'raster-saturation':-.75, 'raster-contrast':-.08, 'raster-brightness-min':.04}}]]],
+  ['osm', 'OpenStreetMap', 0, [[{tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], maxzoom:19}, OSMA]]],
   ['hires', 'USGS imagery, highest resolution', 1, imgParts(sharp(NAIPPX, 'RSP_CubicConvolution', 94), NAIPPA, 15)],
   ['naip', 'NAIP aerial (USDA)', 1, imgParts(sharp(NAIPX, 'RSP_BilinearInterpolation', 92), NAIPA, 16)],
   ['img', 'USGS imagery', 1, imgParts(sharp(NAIPX, 'RSP_BilinearInterpolation', 92), ATTR, 17)],
   ['relief', 'USGS shaded relief', 0, [[tnm('USGSShadedReliefOnly'), ATTR]]],
-  ['osm', 'OpenStreetMap', 0, [[{tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], maxzoom:19}, OSMA]]],
   ['otm', 'OpenTopoMap', 0, [[{tiles:['a', 'b', 'c'].map(s => 'https://' + s + '.tile.opentopomap.org/{z}/{x}/{y}.png'), maxzoom:17},
     'Map data: ' + OSMA + ', SRTM. Style: &copy; <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a> (CC-BY-SA)']]]
 ];

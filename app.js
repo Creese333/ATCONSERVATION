@@ -2627,7 +2627,7 @@ Q.forEach(q => q.m.forEach(m => { m.q = q; m.th = m.th || q.th; m.kind = m.kind 
   if (m.hollow0){ const g = m.get; m.get = (lv, c) => { const v = g(lv, c); return v === 0 ? null : v; }; } }));
 
 /* ---------- state ---------- */
-/* The basemap the page opens on: USGS topo. */
+/* The basemap the page opens on: USGS imagery, highest resolution. */
 const DEFBASE = 'hires';
 /* When does it flower here? opens on Flowering, week by week, so Play shows the season moving north (Pest and invasives keep their own list) */
 { const p = Q.find(q => q.id === 'phen'); if (p){ const w = p.m.find(m => m.id === 'wave'); if (w) p.m = [w, ...p.m.filter(m => m !== w)]; } }
@@ -2802,6 +2802,7 @@ map.ml.on('rotate', () => { V3.n.firstChild.style.transform = `rotate(${-map.ml.
 const BASEDEF = ATMap.BASEDEF.map(b => [b[0], b[1], null, b[2]]);
 const BASES = {}, DARKBASE = {}; BASEDEF.forEach(b => { BASES[b[0]] = true; DARKBASE[b[0]] = !!b[3]; });
 const TNM = 'https://basemap.nationalmap.gov/arcgis/rest/services/';   /* Save for offline keeps these imagery tiles */
+if (S.base === 'topo') S.base = 'osm';   /* USGS topo was replaced by OpenStreetMap; old links open on it */
 if (!BASES[S.base]) S.base = DEFBASE;
 map.setBase(S.base);
 /* The trail line: a white casing under a dark line (the other way round over imagery). TRAIL.lines is the line being drawn,
