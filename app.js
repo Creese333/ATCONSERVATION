@@ -4404,14 +4404,48 @@ const TOURS = {
     {t:'Explore on your own', q:'feat', m:'fac', lv:'auto', view:'trail', d3:false, cells:true, layers:[], hl:['#v3btn', '#layerstog', '#toolstog', '#ctlbtn'],
      x:'The map is flat again with the cells back on. Press 3D whenever you want the mountains, choose layers to see what’s on the ground, and click any cell for what’s built and maintained there.'}]}
 };
-const TOUR = {id:null, k:0};
+const TOUR = {id:null, k:0, cut:0};
 /* the map controls a stop sets (see the 3D tour); what they were before the tour is kept in TOUR.prev and put back at the end */
 function tourTools(on){ if (isPhone()){ const cb = $('#ctlbtn'), o = document.body.classList.contains('ctlopen'); if (!!on !== o && cb) cb.click(); }
   else if (on){ const tg = $('#toolstog'); if (tg && tg.getAttribute('aria-expanded') === 'false') tg.click(); } }
+function tourD3(st){ if ('d3' in st && st.d3 !== map.is3D()){ if (S.drawing) drawMode(false); map.set3D(st.d3, {animate:false}); } }
+/* far: a move worth hiding (more than 40 km, a 3D change, or a big change of zoom) */
+function tourFar(st, bd){ const c = map.ml.getCenter(), z = map.ml.getZoom();
+  if ('d3' in st && st.d3 !== map.is3D()) return true;
+  const to = st.cam ? {lat:st.cam.at[0], lng:st.cam.at[1], z:st.cam.z} : bd ? {lat:bd.getCenter().lat, lng:bd.getCenter().lng, z:null} : null; if (!to) return false;
+  const R = Math.PI / 180, km = 6371 * Math.acos(Math.min(1, Math.sin(c.lat * R) * Math.sin(to.lat * R) + Math.cos(c.lat * R) * Math.cos(to.lat * R) * Math.cos((to.lng - c.lng) * R)));
+  return km > 40 || (to.z != null && Math.abs(to.z - z) > 2.5); }
+function tourFade(on){ let f = document.getElementById('tourfade'); if (!f){ f = document.createElement('div'); f.id = 'tourfade'; map.getContainer().appendChild(f); }
+  f.classList.toggle('on', !!on); }
+const FADEMS = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 230;
+function tourCut(go){ const tk = ++TOUR.cut; tourFade(true);
+  setTimeout(() => { if (tk !== TOUR.cut || !TOUR.id) return; TOUR.instant = true; try { go(); } finally { TOUR.instant = false; } tourReady(tk); }, FADEMS); }
+/* the new view shows once it has drawn (map idle), or after 4 s at most; then the next stop's tiles are fetched quietly */
+function tourReady(tk){ let done = false; const fin = () => { if (done) return; done = true; if (tk !== TOUR.cut) return; tourFade(false); tourPrefetch(); };
+  setTimeout(() => { if (done) return; map.ml.once('idle', fin); setTimeout(fin, 4000); }, 60); }
+/* the next stop's basemap and terrain tiles, fetched into the browser's cache while this stop is read (same addresses and
+   request settings as the map's own tile loader, so the map finds them there): around the place the camera looks at, at
+   the zoom of the view and two coarser zooms reaching ahead toward the horizon */
+function tourPrefetch(){ const T = TOUR.id && TOURS[TOUR.id], nx = T && T.steps[TOUR.k + 1], tk = TOUR.cut; if (!nx || !nx.cam || !navigator.onLine) return;
+  const c = nx.cam, st = map.ml.getStyle(), urls = new Set(), R = Math.PI / 180;
+  const srcs = new Set(); st.layers.forEach(l => { if (l.source && (l.type === 'raster' || l.type === 'hillshade') && (!l.layout || l.layout.visibility !== 'none')) srcs.add(l.source); });
+  if (st.terrain) srcs.add(st.terrain.source);
+  const tx = (lon, z) => Math.floor((lon + 180) / 360 * 2 ** z), ty = (lat, z) => Math.floor((1 - Math.log(Math.tan(lat * R) + 1 / Math.cos(lat * R)) / Math.PI) / 2 * 2 ** z);
+  const bbox = (x, y, z) => { const s = 2 * Math.PI * 6378137 / 2 ** z, o = Math.PI * 6378137; return [x * s - o, o - (y + 1) * s, (x + 1) * s - o, o - y * s].join(','); };
+  const W = (isPhone() ? 430 : 900) * 40075016 * Math.cos(c.at[0] * R) / (512 * 2 ** c.z);   /* metres across the view */
+  srcs.forEach(id => { const s = st.sources[id]; if (!s || !s.tiles) return; const ts = s.tileSize || 256, mz = s.maxzoom || 18;
+    [0, 1, 2].forEach(d => { const z = Math.max(0, Math.min(mz, Math.round(c.z + (ts === 256 ? 1 : 0)) - d)), ahead = d * W * .9;
+      const la = c.at[0] + ahead * Math.cos(c.bearing * R) / 111320, lo = c.at[1] + ahead * Math.sin(c.bearing * R) / (111320 * Math.cos(c.at[0] * R));
+      const X = tx(lo, z), Y = ty(la, z);
+      for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++){ const tpl = s.tiles[(Math.abs(X + i + Y + j)) % s.tiles.length], raw = tpl.replace(/^atq:\/\//, 'https://').replace(/#.*$/, '');
+        urls.add(raw.replace('{z}', z).replace('{x}', X + i).replace('{y}', Y + j).replace('{bbox-epsg-3857}', bbox(X + i, Y + j, z))); } }); });
+  const q = [...urls]; let run = 0; const next = () => { if (tk !== TOUR.cut || !TOUR.id || !q.length) return; run++;
+    fetch(q.shift(), {mode:'cors', credentials:'omit', priority:'low'}).catch(() => {}).finally(() => { run--; next(); }); };
+  for (let i = 0; i < 3; i++) next(); }
 function tourCtl(st){ const ph = isPhone();
   if (st.layers) LIVE.forEach(l => { const w = st.layers.includes(l.id); if (w !== !!l.on) liveToggle(l, w); });
   if ('cells' in st && st.cells !== S.cells) $('#cellsbtn').click();
-  if ('d3' in st && st.d3 !== map.is3D()){ if (S.drawing) drawMode(false); map.set3D(st.d3, {animate:false}); }
+  if (!TOUR.id || !TOURS[TOUR.id].ctl || TOUR.ending) tourD3(st);   /* in the controls tour, with the camera move (tourGo) */
   if ('tools' in st || TOURS[TOUR.id].ctl) tourTools(!!st.tools);
   if (window.layersPlace) layersPlace(); if (window.lvPlace) lvPlace();   /* the control rows, laid out again for what is shown now */
   document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl'));
@@ -4443,8 +4477,8 @@ function tourCam(st){ const c = st.cam, ph = isPhone(), o = {center:[c.at[1], c.
     const side = (b.width - L - R) * (b.height - 130), under = (b.width - 24 - R) * (b.height - T - 40);
     const pad = side >= under ? {left:L, right:R, top:90, bottom:40} : {left:24, right:R, top:T, bottom:40};
     const cam = map.ml.cameraForBounds(bd, {padding:pad, bearing:c.bearing, pitch:c.pitch});
-    if (cam){ map.ml.flyTo(Object.assign({}, o, cam, {bearing:c.bearing, pitch:c.pitch, zoom:Math.min(cam.zoom, o.zoom + 1), duration:2600, essential:true})); return; } }
-  map.ml.flyTo(Object.assign(o, {offset:[dx, 0], duration:2600, essential:true})); }
+    if (cam){ map.ml.flyTo(Object.assign({}, o, cam, {bearing:c.bearing, pitch:c.pitch, zoom:Math.min(cam.zoom, o.zoom + 1), duration:TOUR.instant ? 0 : 2600, essential:true})); return; } }
+  if (TOUR.instant) map.ml.easeTo(Object.assign(o, {offset:[dx, 0], duration:0})); else map.ml.flyTo(Object.assign(o, {offset:[dx, 0], duration:2600, essential:true})); }
 let tourSites = null;
 const STAR = s => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>`;
 function tourSitesClear(){ if (tourSites) tourSites.forEach(m => m.remove()); tourSites = null; }
@@ -4486,6 +4520,7 @@ function tourGo(k){ const T = TOURS[TOUR.id]; if (!T) return;  TOUR.k = Math.max
   let bd = null; if (cells.length){ bd = G.bounds([]); cells.forEach(c => ring(lv, c).forEach(p => bd.extend(p))); bd = bd.pad(st.pick.top ? .05 : .6); }
   else if (st.view === 'trail') bd = TRAIL.bounds(); else if (Array.isArray(st.view)) bd = G.bounds(st.view);
   if (POP) POP.remove(); if (st.pop) tourPop(st);
+  const move = () => {
   if (st.cam){ map.stop(); tourCam(st); }
   else if (ph){ map.stop(); if (st.zoom && cells.length) map.setView(st.pick.near, st.zoom, {animate:false}); else if (bd) map.fitBounds(bd, {animate:false, maxZoom:12}); }
   else { /* a wide map view sits in the middle of the map; it slides east only on a window too narrow to keep the trail
@@ -4495,7 +4530,11 @@ function tourGo(k){ const T = TOURS[TOUR.id]; if (!T) return;  TOUR.k = Math.max
         const z = map.getBoundsZoom(bd, false), mid = bd.getCenter();
         const x = map.getSize().x / 2 + map.project(G.ll(mid.lat, TRAIL.bounds().getWest()), z).x - map.project(mid, z).x;
         pl = Math.max(0, Math.min(2 * (r1.right - r0.left + 16 - x), r0.width * .55)); } }
-    if (bd) map.flyToBounds(bd, {duration:1.2, maxZoom:12, paddingTopLeft:[pl, 0]}); if (st.zoom && cells.length) setTimeout(() => { if (TOUR.id) map.flyTo(st.pick.near, st.zoom, {duration:.8}); }, 1300); }
+    if (bd){ if (TOUR.instant) map.fitBounds(bd, {animate:false, maxZoom:12, paddingTopLeft:[pl, 0]}); else map.flyToBounds(bd, {duration:1.2, maxZoom:12, paddingTopLeft:[pl, 0]}); } if (st.zoom && cells.length) setTimeout(() => { if (TOUR.id) map.flyTo(st.pick.near, st.zoom, {duration:.8}); }, 1300); } };
+  /* the tour about the controls jumps between places hundreds of miles apart: rather than fly there in 3D (drawing and
+     loading every place in between), the map fades out, jumps, and fades back in once the new view has drawn */
+  if (TOURS[TOUR.id].ctl){ const go = () => { tourD3(st); move(); }; if ((ph && (st.cam || bd)) || tourFar(st, bd)) tourCut(go);   /* phones jump, so always behind the fade */ else { go(); tourReady(++TOUR.cut); } }
+  else move();
   if (ph) tourScroll(); }
 function tourDraw(lv, cells){ const T = TOURS[TOUR.id], st = T.steps[TOUR.k], N = T.steps.length; let d = $('#tour');
   if (!d){ d = document.createElement('div'); d.id = 'tour'; d.className = 'tour'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', 'Guided tour'); G.stopClicks(d); G.stopScroll(d); }
@@ -4540,7 +4579,8 @@ function tourStart(id){ if (HOWK >= 0) howEnd(); if (S.side.qs){ S.side.qs = fal
   if (TOURS[id].ctl && !TOUR.prev){ TOUR.prev = {layers:LIVE.filter(l => l.on).map(l => l.id), cells:S.cells, d3:map.is3D()}; S.ownLayers = TOUR.prev.layers; }
   document.body.classList.toggle('tourctl', !!TOURS[id].ctl); TOUR.id = id; tourGo(0); }   /* the legend folds up while the tour panel is open */
 function tourEnd(){ const was = TOUR.id; document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl'));
-  if (TOUR.prev && was){ const P = TOUR.prev; TOUR.prev = null; S.ownLayers = null; tourCtl(Object.assign({layers:P.layers, cells:P.cells, d3:P.d3}, TOURS[was].ctl ? {tools:0} : {})); document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl')); }
+  TOUR.cut++; tourFade(false);
+  if (TOUR.prev && was){ const P = TOUR.prev; TOUR.prev = null; S.ownLayers = null; TOUR.ending = true; tourCtl(Object.assign({layers:P.layers, cells:P.cells, d3:P.d3}, TOURS[was].ctl ? {tools:0} : {})); TOUR.ending = false; document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl')); }
   document.body.classList.remove('tourctl'); TOUR.id = null; const d = $('#tour'); if (d) d.remove(); setTimeout(() => { if (window.layersPlace) layersPlace(); if (window.lvPlace) lvPlace(); }, 50); if (document.body.classList.contains('touring')){ tourMobile(false); lockW = 0; lockMapHeight(); map.invalidateSize(); } tourSitesClear(); if (TOUR.leg != null){ S.legend = TOUR.leg; TOUR.leg = null; legend(); } try { const h = new URLSearchParams(location.hash.slice(1)); if (h.has('tour')){ h.delete('tour'); history.replaceState(null, '', '#' + h.toString()); } } catch (x) {} }
 document.addEventListener('keydown', e => { if (!TOUR.id || /input|select|textarea/i.test((e.target.tagName || ''))) return;
   if (e.key === 'ArrowRight') tourGo(TOUR.k + 1); else if (e.key === 'ArrowLeft') tourGo(TOUR.k - 1); else if (e.key === 'Escape') tourEnd(); });
