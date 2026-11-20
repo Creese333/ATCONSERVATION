@@ -2798,7 +2798,8 @@ function v3Place(){ if (!V3.d) return; const mc = map.getContainer(), z = mc.que
   const w = mc.querySelector(side ? '.maplibregl-control-container' : '.maplibregl-ctrl-top-left'); if (w && V3.d.parentNode !== w) w.appendChild(V3.d);
   V3.d.classList.toggle('v3side', side); V3.d.style.top = '';
   if (side){ /* just under the lowest map control (and the locate button), clear of them */ const m = mc.getBoundingClientRect(); let b = 0;
-    ['ctls', 'levels'].map(id => document.getElementById(id)).concat([mc.querySelector('.locctl')]).forEach(e => { if (e && e.offsetParent !== null){ const r = e.getBoundingClientRect(); if (r.width && r.bottom > m.top && r.top < m.top + m.height / 2) b = Math.max(b, r.bottom - m.top); } });
+    const els = [...document.querySelectorAll('#ctls, #ctls *, #levels, #levels *')].concat([mc.querySelector('.locctl')]);   /* every control row, wherever its box ends */
+    els.forEach(e => { if (e && e.offsetParent !== null){ const r = e.getBoundingClientRect(); if (r.width && r.bottom > m.top && r.top < m.top + m.height / 2) b = Math.max(b, r.bottom - m.top); } });
     V3.d.style.top = Math.round(Math.max(10, b + 10)) + 'px'; } }
 map.ml.on('view3d', v3Sync); v3Sync(); v3Place(); addEventListener('resize', v3Place); [300, 1500].forEach(t => setTimeout(v3Place, t));
 map.ml.on('rotate', () => { V3.n.firstChild.style.transform = `rotate(${-map.ml.getBearing()}deg)`; });
