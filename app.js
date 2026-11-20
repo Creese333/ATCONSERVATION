@@ -3158,6 +3158,10 @@ function liveOv(l){ if (l.ov) return l.ov;
 function liveMarks(l){ l.marks.forEach(m => m.remove()); l.marks = []; }
 function liveClear(l){ if (l.ov) l.ov.clear(); liveMarks(l); l.feats = []; l.lines = []; }
 /* the middle of a line by length (its first part), and its extent: for the name labels */
+/* the middle of a polygon's largest outline, for its label */
+function polyMid(g){ const polys = g.type === 'MultiPolygon' ? g.coordinates : g.type === 'Polygon' ? [g.coordinates] : []; let best = null, n = 0;
+  polys.forEach(p => { const r = p[0] || []; if (r.length > n){ n = r.length; best = r; } }); if (!best) return null;
+  let a = 0, o = 0; best.forEach(c => { a += c[1]; o += c[0]; }); return G.ll(a / best.length, o / best.length); }
 function lineMid(g){ const part = g.type === 'MultiLineString' ? g.coordinates[0] : g.coordinates; if (!part || !part.length) return null;
   let tot = 0; const d = []; for (let i = 1; i < part.length; i++){ const x = Math.hypot(part[i][0] - part[i-1][0], part[i][1] - part[i-1][1]); d.push(x); tot += x; }
   let h = tot / 2; for (let i = 1; i < part.length; i++){ if (h <= d[i-1]){ const t = d[i-1] ? h / d[i-1] : 0; return G.ll(part[i-1][1] + (part[i][1] - part[i-1][1]) * t, part[i-1][0] + (part[i][0] - part[i-1][0]) * t); } h -= d[i-1]; }
@@ -3173,8 +3177,11 @@ function liveDraw(l, feats){ const ov = liveOv(l); liveMarks(l);
       else if (l.type === 'poly') Object.assign(p, {_fc:(LANDMAP.get(p.LEGEND3) || [0, 0, '#BBBBBB'])[2], _fo:.5, _lc:'#4A4A4A', _lw:.6});
       return {type:'Feature', properties:p, geometry:f.geometry}; });
     ov.set({type:'FeatureCollection', features:fs});
-    l.lines = l.type !== 'line' ? [] : fs.map(f => { const nm = featName(l, f.properties), c = nm && lineMid(f.geometry);
-      return c ? {nm, c, b:G.bounds(G.coords(f.geometry))} : null; }).filter(Boolean); }
+    l.lines = l.type === 'line' ? fs.map(f => { const nm = featName(l, f.properties), c = nm && lineMid(f.geometry);
+      return c ? {nm, c, b:G.bounds(G.coords(f.geometry))} : null; }).filter(Boolean)
+      /* maintained landscapes are labeled too, at the middle of each area's outline (the 3D tour shows them by name) */
+      : l.id === 'mland' ? fs.map(f => { const nm = featName(l, f.properties), c = nm && polyMid(f.geometry);
+        return c ? {nm, c, b:G.bounds(G.coords(f.geometry))} : null; }).filter(Boolean) : []; }
   ov.show(l.on); labelSync(l); }
 /* Keep a popup or the pinned value label clear of everything that sits on top of the map: the cell-size, Map tools, basemap and Map layers controls,
    the zoom buttons, an open layers list, the legend, and the details panel. The map is nudged just far enough to clear them. */
@@ -3213,7 +3220,7 @@ function labelSync(){ cancelAnimationFrame(labT); labT = requestAnimationFrame(l
 function labelAll(){ LABELS.forEach(m => m.remove()); LABELS = []; if (map.getZoom() < LABELZ) return; const b = map.getBounds().pad(.05), ctr = map.latLngToContainerPoint(map.getCenter()), cand = [], taken = [];
   LIVE.forEach((l, li) => { if (!l.on) return;
     if (l.type === 'pt') l.feats.forEach(f => { const c = f.geometry.coordinates, ll = G.ll(c[1], c[0]); if (!b.contains(ll)) return; const p = map.latLngToContainerPoint(ll); taken.push([p.x - 12, p.y - 12, p.x + 12, p.y + 12]); if (f._nm) cand.push({nm:f._nm, ll, p, r:13, pri:li}); });
-    else if (l.type === 'line'){ const by = new Map(); /* trail name -> the segment in view nearest the middle of the screen */
+    else if (l.type === 'line' || l.id === 'mland'){ const by = new Map(); /* trail or landscape name -> the one in view nearest the middle of the screen */
       l.lines.forEach(ly => { if (!ly.b.intersects(b) || !b.contains(ly.c)) return;
         const p = map.latLngToContainerPoint(ly.c), d = p.distanceTo(ctr), cur = by.get(ly.nm); if (!cur || d < cur.d) by.set(ly.nm, {nm:ly.nm, ll:ly.c, p, r:5, pri:li + 100, d}); });
       by.forEach(v => cand.push(v)); } });
@@ -4377,22 +4384,22 @@ const TOURS = {
      x:'Click any cell to see its grassland score and what drives it: nearby grassland species, priority invasives, soils and wetland proximity. Rare species are summarized by cell only, and exact locations are never shown. Scores are a screening tool, not a substitute for field surveys or compliance review.'}]},
   /* the map controls, shown on the facilities question: 3D, layers, cells off and selecting cells, at places with steep relief.
      A stop can set: d3 (3D on or off), cam (where the camera looks from: at, zoom z in MapLibre terms, pitch, bearing;
-     the views were matched to Casey's phone screenshots, Nov 2026, so phones get z - 0.6 as on his phone),
+     the views are Casey's own, read from his phone with the ?cam readout, Nov 2026; phones get z - 0.6, his phone's zoom),
      layers (the map layers on; every other one goes off), cells (on or off), tools (open Map tools) and hl (the controls
      that pulse). When the tour ends, the layers, cells and 3D go back to how they were. */
   '3D': {title:'Exploring the trail in 3D', ctl:1,
    steps:[
     {t:'The map is yours to steer', q:'feat', m:'fac', lv:'auto', view:'trail', d3:false, cells:true, layers:[], hl:['#layerstog', '#toolstog', '#ctlbtn', '#v3btn'],
      x:'Each cell shows how many shelters, campsites, privies, parking areas, bridges and other facilities it holds. Three controls change what you see: Layers adds the facilities themselves, Map tools turns the cells off or selects them, and 3D tilts the map over the mountains. This tour uses each one.'},
-    {t:'Turn on 3D', q:'feat', m:'shel', lv:'hex', d3:true, cam:{at:[35.6142, -83.4586], z:12.63, pitch:68, bearing:17}, cells:true, layers:['shelters'], hl:['#v3btn', '#layerstog'],
-     x:'Pressing 3D tilts the map and raises the mountains. Here in the Great Smoky Mountains, Shelters is switched on under Layers, and Mt. Collins Shelter sits just off the crest, with Kuwohi behind and Mount Le Conte ahead. Drag with two fingers, or with the right mouse button, to turn and tilt the view.'},
-    {t:'Turn the cells off', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[35.8713, -82.8630], z:13.65, pitch:62, bearing:35}, cells:false, tools:1, layers:['shelters', 'vistas'], hl:['#cellsbtn'],
-     x:'Cells off, under Map tools, clears the colored grid so you can read the land itself. With Vistas also switched on, the viewpoints around Deer Park Mountain appear, from Lamb Knob to Lovers Leap Ridge above the French Broad River. Tap any symbol for its name.'},
-    {t:'Maintained landscapes', q:'feat', m:'mlac', lv:'hex', d3:true, cam:{at:[36.1169, -82.0583], z:13.19, pitch:65, bearing:52}, cells:false, layers:['mland', 'shelters'], hl:['#layerstog'],
-     x:'The grassy balds of the Roan Highlands are kept open by active management, and the Maintained landscapes layer outlines them. Jane Bald and Grassy Ridge are in front, and the ridge runs on past Stan Murray and Overmountain shelters toward Little Hump and Hump Mountain.'},
-    {t:'Vistas on the Presidential Range', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[44.3108, -71.3024], z:13.09, pitch:67, bearing:24}, cells:false, layers:['vistas'], hl:['#layerstog'],
+    {t:'Turn on 3D', q:'feat', m:'shel', lv:'hex', d3:true, cam:{at:[35.5642, -83.5451], z:12.48, pitch:56, bearing:75}, cells:true, layers:['shelters'], hl:['#v3btn', '#layerstog'],
+     x:'Pressing 3D tilts the map and raises the mountains. Here in the Great Smoky Mountains, Shelters is switched on under Layers: Silers Bald and Double Spring Gap shelters sit along the crest, with Mt. Collins Shelter beyond. Drag with two fingers, or with the right mouse button, to turn and tilt the view.'},
+    {t:'Turn the cells off', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[36.4091, -82.0132], z:12.55, pitch:62, bearing:33}, cells:false, tools:1, layers:['vistas'], hl:['#cellsbtn'],
+     x:'Cells off, under Map tools, clears the colored grid so you can read the land itself. With Vistas switched on, the viewpoints along Iron Mountain in Tennessee appear, out to the Shady Valley overlook. Tap any symbol for its name.'},
+    {t:'Maintained landscapes', q:'feat', m:'mlac', lv:'hex', d3:true, cam:{at:[36.1143, -82.0605], z:13.29, pitch:55, bearing:49}, cells:false, layers:['mland'], hl:['#layerstog'],
+     x:'The grassy balds of the Roan Highlands are kept open by active management, and the Maintained landscapes layer outlines and names them. Jane Bald and Grassy Ridge are in front, and the ridge runs on toward Little Hump and Hump Mountain.'},
+    {t:'Vistas on the Presidential Range', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[44.2316, -71.3571], z:11.44, pitch:57, bearing:20}, cells:false, layers:['vistas'], hl:['#layerstog'],
      x:'Mount Washington and the Presidential Range hold some of the steepest relief on the trail. The Vistas layer marks the viewpoints recorded along the A.T., from summits to ledges and open areas. Any layer turns on and off the same way, from Layers.'},
-    {t:'Select cells', q:'feat', m:'mlac', lv:'hex', pick:{near:[36.6566, -81.5352], km:2.2}, d3:true, cam:{at:[36.6587, -81.5127], z:12.34, pitch:60, bearing:38}, cells:true, tools:1, layers:['shelters', 'mland'], hl:['#pickbtn', '#boxbtn'],
+    {t:'Select cells', q:'feat', m:'mlac', lv:'hex', pick:{near:[36.6566, -81.5352], km:2.2}, d3:true, cam:{at:[36.6671, -81.5077], z:12.34, pitch:60, bearing:38}, cells:true, tools:1, layers:['mland'], hl:['#pickbtn', '#boxbtn'],
      x:'Pick cells and Select area, under Map tools, choose cells to compare. These {n} cells around Thomas Knob Shelter in the Grayson Highlands are selected; each holds {range} of maintained landscapes.'},
     {t:'Explore on your own', q:'feat', m:'fac', lv:'auto', view:'trail', d3:false, cells:true, layers:[], hl:['#v3btn', '#layerstog', '#toolstog', '#ctlbtn'],
      x:'The map is flat again with the cells back on. Press 3D whenever you want the mountains, choose layers to see what’s on the ground, and click any cell for what’s built and maintained there.'}]}
