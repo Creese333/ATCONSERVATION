@@ -4371,22 +4371,23 @@ const TOURS = {
     {t:'Explore on your own', q:'rest', m:'grass', lv:'auto', view:'trail', img:{f:'meadow-path', c:'A footpath through a native grass meadow', a:'A narrow dirt footpath through a mowed strip between tall native grasses, under a big cloudy sky'},
      x:'Click any cell to see its grassland score and what drives it: nearby grassland species, priority invasives, soils and wetland proximity. Rare species are summarized by cell only, and exact locations are never shown. Scores are a screening tool, not a substitute for field surveys or compliance review.'}]},
   /* the map controls, shown on the facilities question: 3D, layers, cells off and selecting cells, at places with steep relief.
-     A stop can set: d3 (3D on or off), cam (where the camera looks from: at, zoom z in MapLibre terms, pitch, bearing),
+     A stop can set: d3 (3D on or off), cam (where the camera looks from: at, zoom z in MapLibre terms, pitch, bearing;
+     the views were matched to Casey's phone screenshots, Nov 2026, so phones get z - 0.6 as on his phone),
      layers (the map layers on; every other one goes off), cells (on or off), tools (open Map tools) and hl (the controls
      that pulse). When the tour ends, the layers, cells and 3D go back to how they were. */
   '3D': {title:'Exploring the trail in 3D', ctl:1,
    steps:[
     {t:'The map is yours to steer', q:'feat', m:'fac', lv:'auto', view:'trail', d3:false, cells:true, layers:[], hl:['#layerstog', '#toolstog', '#ctlbtn', '#v3btn'],
      x:'Each cell shows how many shelters, campsites, privies, parking areas, bridges and other facilities it holds. Three controls change what you see: Layers adds the facilities themselves, Map tools turns the cells off or selects them, and 3D tilts the map over the mountains. This tour uses each one.'},
-    {t:'Turn on 3D', q:'feat', m:'shel', lv:'hex', d3:true, cam:{at:[35.6245, -83.3985], z:13.1, pitch:64, bearing:48}, cells:true, layers:['shelters'], hl:['#v3btn', '#layerstog'],
-     x:'Pressing 3D tilts the map and raises the mountains. Here in the Great Smoky Mountains, Shelters is switched on under Layers, and Icewater Spring Shelter sits just below the crest. Drag with two fingers, or with the right mouse button, to turn and tilt the view.'},
-    {t:'Turn the cells off', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[35.6330, -83.3880], z:13.4, pitch:66, bearing:62}, cells:false, tools:1, layers:['shelters', 'vistas'], hl:['#cellsbtn'],
-     x:'Cells off, under Map tools, clears the colored grid so you can read the land itself. With Vistas also switched on, the viewpoints along this knife-edge ridge appear, among them Charlies Bunion and The Sawteeth. Tap any symbol for its name.'},
-    {t:'Maintained landscapes', q:'feat', m:'mlac', lv:'hex', d3:true, cam:{at:[36.1050, -82.1000], z:12.5, pitch:62, bearing:72}, cells:false, layers:['mland', 'shelters'], hl:['#layerstog'],
-     x:'The grassy balds of the Roan Highlands are kept open by active management, and the Maintained landscapes layer outlines them. Round Bald, Jane Bald, Grassy Ridge, Little Hump and Hump Mountain run east along the ridge, with Stan Murray and Overmountain shelters between them.'},
-    {t:'Vistas on the Presidential Range', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[44.2560, -71.3300], z:12.3, pitch:66, bearing:24}, cells:false, layers:['vistas'], hl:['#layerstog'],
+    {t:'Turn on 3D', q:'feat', m:'shel', lv:'hex', d3:true, cam:{at:[35.6142, -83.4586], z:12.63, pitch:68, bearing:17}, cells:true, layers:['shelters'], hl:['#v3btn', '#layerstog'],
+     x:'Pressing 3D tilts the map and raises the mountains. Here in the Great Smoky Mountains, Shelters is switched on under Layers, and Mt. Collins Shelter sits just off the crest, with Kuwohi behind and Mount Le Conte ahead. Drag with two fingers, or with the right mouse button, to turn and tilt the view.'},
+    {t:'Turn the cells off', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[35.8713, -82.8630], z:13.65, pitch:62, bearing:35}, cells:false, tools:1, layers:['shelters', 'vistas'], hl:['#cellsbtn'],
+     x:'Cells off, under Map tools, clears the colored grid so you can read the land itself. With Vistas also switched on, the viewpoints around Deer Park Mountain appear, from Lamb Knob to Lovers Leap Ridge above the French Broad River. Tap any symbol for its name.'},
+    {t:'Maintained landscapes', q:'feat', m:'mlac', lv:'hex', d3:true, cam:{at:[36.1169, -82.0583], z:13.19, pitch:65, bearing:52}, cells:false, layers:['mland', 'shelters'], hl:['#layerstog'],
+     x:'The grassy balds of the Roan Highlands are kept open by active management, and the Maintained landscapes layer outlines them. Jane Bald and Grassy Ridge are in front, and the ridge runs on past Stan Murray and Overmountain shelters toward Little Hump and Hump Mountain.'},
+    {t:'Vistas on the Presidential Range', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[44.3108, -71.3024], z:13.09, pitch:67, bearing:24}, cells:false, layers:['vistas'], hl:['#layerstog'],
      x:'Mount Washington and the Presidential Range hold some of the steepest relief on the trail. The Vistas layer marks the viewpoints recorded along the A.T., from summits to ledges and open areas. Any layer turns on and off the same way, from Layers.'},
-    {t:'Select cells', q:'feat', m:'mlac', lv:'hex', pick:{near:[36.6566, -81.5352], km:2.2}, d3:true, cam:{at:[36.6440, -81.5450], z:12.7, pitch:58, bearing:38}, cells:true, tools:1, layers:['shelters', 'mland'], hl:['#pickbtn', '#boxbtn'],
+    {t:'Select cells', q:'feat', m:'mlac', lv:'hex', pick:{near:[36.6566, -81.5352], km:2.2}, d3:true, cam:{at:[36.6587, -81.5127], z:12.34, pitch:60, bearing:38}, cells:true, tools:1, layers:['shelters', 'mland'], hl:['#pickbtn', '#boxbtn'],
      x:'Pick cells and Select area, under Map tools, choose cells to compare. These {n} cells around Thomas Knob Shelter in the Grayson Highlands are selected; each holds {range} of maintained landscapes.'},
     {t:'Explore on your own', q:'feat', m:'fac', lv:'auto', view:'trail', d3:false, cells:true, layers:[], hl:['#v3btn', '#layerstog', '#toolstog', '#ctlbtn'],
      x:'The map is flat again with the cells back on. Press 3D whenever you want the mountains, choose layers to see what’s on the ground, and click any cell for what’s built and maintained there.'}]}
