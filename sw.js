@@ -18,8 +18,9 @@
    atc-v8: the same, after Describe as text was removed.
    atc-v9: the same, with the lands layer drawn without slivers in 3D.
    atc-v10: the same, with the 3D tour.
-   atc-v11: the same, with the tour views matched to Casey's screenshots. */
-const VER = 'atc-v11';
+   atc-v11: the same, with the tour views matched to Casey's screenshots.
+   atc-v12: the same, with tour layers kept out of the address and the ?cam readout. */
+const VER = 'atc-v12';
 const OFF = 'atoffline-1';          /* filled by Save for offline; never cleared here */
 const LIVE = 'atlive-1';            /* last copy of the trail line, mile points and point layers (shelters, campsites...) */
 const DATA = 'https://grid.trailassessment.org';   /* the data site: /data/ and /images/birds/ */

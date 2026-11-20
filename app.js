@@ -2656,7 +2656,8 @@ function readHash(){ const h = new URLSearchParams(location.hash.slice(1));
     if (S.cell == null) S.pendingCell = h.get('cell'); } }   /* a watershed cell: found once the watershed cells load */
 function writeHash(){ const p = new URLSearchParams({q:S.q.id, m:S.m.id, size:S.level});
   if (S.m.find) p.set('find', S.m.find.key);
-  { const on = LIVE.filter(l => l.on).map(l => l.id); if (on.length) p.set('layers', on.join(',')); }
+  /* during a tour that switches layers, the address keeps the person's own layers, so reopening it never leaves the tour's on */
+  { const on = S.ownLayers || LIVE.filter(l => l.on).map(l => l.id); if (on.length) p.set('layers', on.join(',')); }
   if (S.ext === 'huc') p.set('ext', 'huc');
   if (S.herb && S.q.id === 'rest') p.set('herb', '1');
   if (S.appa && S.q.id === 'rest') p.set('lands', 'appa');
@@ -2795,6 +2796,10 @@ function v3Sync(){ const on = map.is3D(), off = !!map._offline;
   V3.btn.title = off ? 'No signal: 3D needs the terrain tiles' : on ? 'Back to the flat map' : 'Show the map in 3D, over the terrain';
   V3.btn.setAttribute('aria-label', V3.btn.title); V3.n.hidden = !on; }
 map.ml.on('view3d', v3Sync); v3Sync();
+/* ?cam in the address: a readout of the camera (center, MapLibre zoom, tilt, direction), for setting tour views from screenshots */
+if (/[?&]cam\b/.test(location.search)){ const d = document.createElement('div'); d.id = 'camread'; document.body.appendChild(d);
+  const upd = () => { const m = map.ml, c = m.getCenter(); d.textContent = `cam ${c.lat.toFixed(4)}, ${c.lng.toFixed(4)} · z ${m.getZoom().toFixed(2)} · tilt ${Math.round(m.getPitch())} · dir ${Math.round((m.getBearing() + 360) % 360)}`; };
+  map.ml.on('move', upd); upd(); }
 map.ml.on('rotate', () => { V3.n.firstChild.style.transform = `rotate(${-map.ml.getBearing()}deg)`; });
 /* ---------- basemaps ----------
    Defined in atmap.js with the tile queue (each service a few tiles at a time, failed tiles asked again, NAIP Plus falling back
@@ -4500,10 +4505,10 @@ function tourSize(){ const H = window.visualViewport ? visualViewport.height : i
 addEventListener('resize', () => { if (document.body.classList.contains('touring')) tourSize(); });
 function tourScroll(){ const w = $('#mapwrap'); if (!w) return; const y = w.getBoundingClientRect().top + scrollY; if (Math.abs(scrollY - y) > 2) scrollTo({top:y, behavior:'auto'}); }
 function tourStart(id){ if (HOWK >= 0) howEnd(); if (S.side.qs){ S.side.qs = false; store.set('side2', S.side); } if (!TOURS[id]) return; if (typeof goatEvent === 'function') goatEvent('tour-' + id); if (TOUR.leg == null){ TOUR.leg = S.legend; S.legend = false; }
-  if (TOURS[id].ctl && !TOUR.prev) TOUR.prev = {layers:LIVE.filter(l => l.on).map(l => l.id), cells:S.cells, d3:map.is3D()};
+  if (TOURS[id].ctl && !TOUR.prev){ TOUR.prev = {layers:LIVE.filter(l => l.on).map(l => l.id), cells:S.cells, d3:map.is3D()}; S.ownLayers = TOUR.prev.layers; }
   document.body.classList.toggle('tourctl', !!TOURS[id].ctl); TOUR.id = id; tourGo(0); }   /* the legend folds up while the tour panel is open */
 function tourEnd(){ const was = TOUR.id; document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl'));
-  if (TOUR.prev && was){ const P = TOUR.prev; TOUR.prev = null; tourCtl(Object.assign({layers:P.layers, cells:P.cells, d3:P.d3}, TOURS[was].ctl ? {tools:0} : {})); document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl')); }
+  if (TOUR.prev && was){ const P = TOUR.prev; TOUR.prev = null; S.ownLayers = null; tourCtl(Object.assign({layers:P.layers, cells:P.cells, d3:P.d3}, TOURS[was].ctl ? {tools:0} : {})); document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl')); }
   document.body.classList.remove('tourctl'); TOUR.id = null; const d = $('#tour'); if (d) d.remove(); setTimeout(() => { if (window.layersPlace) layersPlace(); if (window.lvPlace) lvPlace(); }, 50); if (document.body.classList.contains('touring')){ tourMobile(false); lockW = 0; lockMapHeight(); map.invalidateSize(); } tourSitesClear(); if (TOUR.leg != null){ S.legend = TOUR.leg; TOUR.leg = null; legend(); } try { const h = new URLSearchParams(location.hash.slice(1)); if (h.has('tour')){ h.delete('tour'); history.replaceState(null, '', '#' + h.toString()); } } catch (x) {} }
 document.addEventListener('keydown', e => { if (!TOUR.id || /input|select|textarea/i.test((e.target.tagName || ''))) return;
   if (e.key === 'ArrowRight') tourGo(TOUR.k + 1); else if (e.key === 'ArrowLeft') tourGo(TOUR.k - 1); else if (e.key === 'Escape') tourEnd(); });
