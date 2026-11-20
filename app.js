@@ -2811,11 +2811,13 @@ const TRAIL = {lines:D.trail, b:null, bounds(){ return this.b || (this.b = G.bou
   set(lines){ this.lines = lines; this.b = null; trailOv.set(G.lines(lines)); }};
 const trailLayers = () => [{type:'line', layout:{'line-join':'round', 'line-cap':'round'}, paint:{'line-color':'#fff', 'line-width':4, 'line-opacity':.9}},
   {type:'line', layout:{'line-join':'round', 'line-cap':'round'}, paint:{'line-color':'#14294A', 'line-width':1.5}}];
-const trailOv = new G.Overlay(map, 'trail', 'trail', trailLayers()).set(G.lines(D.trail));
+const trailOv = new G.Overlay(map, 'trail', 'trail', trailLayers(), {tolerance:.6, buffer:32}).set(G.lines(D.trail));
 /* the trail's look for the zoom and basemap: [casing color, width, opacity, line color, width, opacity] */
 function trailLook(){ const z = map.getZoom(), far = z < 9, dk = DARKBASE[S.base], wide = z < 7;
   return [dk ? '#14294A' : '#fff', wide ? 2 : far ? 3.4 : 4.6, wide ? 0 : far ? .75 : .9, dk ? '#fff' : '#14294A', wide ? .8 : far ? 1.6 : 2.2, wide ? .7 : 1]; }
-function trailPaint(ov, s, k){ ov.paint(0, 'line-color', s[0]).paint(0, 'line-width', s[1]).paint(0, 'line-opacity', s[2] * k).paint(1, 'line-color', s[3]).paint(1, 'line-width', s[4]).paint(1, 'line-opacity', s[5] * k); }
+/* a layer with nothing to show is switched off rather than drawn see-through: that costs nothing to draw */
+function trailPaint(ov, s, k){ ov.paint(0, 'line-color', s[0]).paint(0, 'line-width', s[1]).paint(0, 'line-opacity', s[2] * k).paint(1, 'line-color', s[3]).paint(1, 'line-width', s[4]).paint(1, 'line-opacity', s[5] * k);
+  map.show(ov.ids[0], s[2] * k > 0); map.show(ov.ids[1], s[5] * k > 0); }
 function trailStyle(){ trailPaint(trailOv, trailLook(), 1); }
 /* the selected cell or cells: a white line under a dark one; the box being drawn: a dashed white rectangle */
 const SELO = new G.Overlay(map, 'sel', 'sel', [{type:'line', paint:{'line-color':'#fff', 'line-width':6}}, {type:'line', paint:{'line-color':'#14294A', 'line-width':2.5}}]);
@@ -3012,7 +3014,7 @@ let STL = null, stOn = true; try { stOn = localStorage.getItem('atgrid_states') 
 function statesShow(){ const cb = $('#stlines'); if (cb) cb.checked = stOn; if (STL) STL.show(stOn); }
 fetch(SRC + 'data/states.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(j => { if (!j || !j.features) return;
   /* thinner at whole-trail zoom (app.js zoom 7 is MapLibre 6) */
-  STL = new G.Overlay(map, 'states', 'states', [{type:'line', paint:{'line-color':'#C4A57C', 'line-opacity':.9, 'line-width':['step', ['zoom'], .7, 7 - 1, 1.2]}}]).set(j); statesShow(); }).catch(() => {});
+  STL = new G.Overlay(map, 'states', 'states', [{type:'line', paint:{'line-color':'#C4A57C', 'line-opacity':.9, 'line-width':['step', ['zoom'], .7, 7 - 1, 1.2]}}], {tolerance:2, buffer:16}).set(j); statesShow(); }).catch(() => {});   /* a light reference line: simplified hard, it draws fast */
 document.addEventListener('change', e => { if (e.target.id === 'stlines'){ stOn = e.target.checked; try { localStorage.setItem('atgrid_states', stOn ? '1' : '0'); } catch (x) {} statesShow(); } });
 /* the rare species priority zones: data/nrpz.enc, unlocked with the passphrase (AES-256-GCM, PBKDF2-SHA256). The passphrase is kept
    only for this tab (sessionStorage), so a reload in the same tab stays unlocked and a new tab asks again */
@@ -3451,7 +3453,7 @@ arcQuery(SVC + 'ANST_Centerline/FeatureServer/0', {outFields:'OBJECTID', maxAllo
   if (lines.length > 500){ TRAIL.set(lines); S.trailLive = true; } }).catch(() => {});
 /* detailed trail line: fetched by 0.25° tiles as the map moves, simplified to about 2 m; a tile that fails leaves the generalized line showing */
 const HIZ = 12, HIT = .25, HIC = new Map();
-const trailHiOv = new G.Overlay(map, 'trailhi', 'trail', trailLayers());
+const trailHiOv = new G.Overlay(map, 'trailhi', 'trail', trailLayers(), {tolerance:.6, buffer:32});
 let hiKey = '', hiTimer = 0;
 function hiTile(tx, ty){ const k = tx + ',' + ty; if (HIC.has(k)) return HIC.get(k);
   const w = tx * HIT, s = ty * HIT, p = arcQuery(SVC + 'ANST_Centerline/FeatureServer/0', {outFields:'OBJECTID', geometry:[w, s, w + HIT, s + HIT].join(','), geometryType:'esriGeometryEnvelope', inSR:4326, spatialRel:'esriSpatialRelIntersects', maxAllowableOffset:'0.00002', geometryPrecision:6}, 5)
