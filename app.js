@@ -4417,12 +4417,14 @@ function tourFar(st, bd){ const c = map.ml.getCenter(), z = map.ml.getZoom();
   return km > 40 || (to.z != null && Math.abs(to.z - z) > 2.5); }
 function tourFade(on){ let f = document.getElementById('tourfade'); if (!f){ f = document.createElement('div'); f.id = 'tourfade'; map.getContainer().appendChild(f); }
   f.classList.toggle('on', !!on); }
-const FADEMS = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 230;
+const FADEMS = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
 function tourCut(go){ const tk = ++TOUR.cut; tourFade(true);
   setTimeout(() => { if (tk !== TOUR.cut || !TOUR.id) return; TOUR.instant = true; try { go(); } finally { TOUR.instant = false; } tourReady(tk); }, FADEMS); }
-/* the new view shows once it has drawn (map idle), or after 4 s at most; then the next stop's tiles are fetched quietly */
-function tourReady(tk){ let done = false; const fin = () => { if (done) return; done = true; if (tk !== TOUR.cut) return; tourFade(false); tourPrefetch(); };
-  setTimeout(() => { if (done) return; map.ml.once('idle', fin); setTimeout(fin, 4000); }, 60); }
+/* the new view shows once it has drawn; then the next stop's tiles are fetched quietly */
+function tourReady(tk){ let done = false; const fin = () => { if (done) return; done = true; if (tk !== TOUR.cut) return; tourFade(false); setTimeout(tourPrefetch, 1500); };
+  /* back in as soon as the map has drawn the new place (or 0.6 s at most): the far tiles keep loading under the slower fade-in
+     (waiting for the whole tilted view, out to the horizon, left the map dark for seconds) */
+  setTimeout(() => { if (done) return; map.ml.once('idle', fin); setTimeout(fin, 600); }, 60); }
 /* the next stop's basemap and terrain tiles, fetched into the browser's cache while this stop is read (same addresses and
    request settings as the map's own tile loader, so the map finds them there): around the place the camera looks at, at
    the zoom of the view and two coarser zooms reaching ahead toward the horizon */
