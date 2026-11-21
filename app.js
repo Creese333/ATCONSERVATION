@@ -2786,17 +2786,18 @@ map.on('locationerror', e => { if (!LOC.on) return; const denied = e.code === 1;
 const V3 = {};
 { const d = document.createElement('div'); d.id = 'v3'; d.className = 'mapctl';
   d.innerHTML = '<button type="button" id="v3btn" aria-pressed="false">3D</button>' +
-    '<button type="button" id="v3north" title="Turn the map to north" aria-label="Turn the map to north" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l4.5 9.5h-9z" fill="#F0605D"/><path d="M12 21.5l-4.5-9.5h9z" fill="currentColor"/></svg></button>';
-  V3.d = d; V3.btn = d.querySelector('#v3btn'); V3.n = d.querySelector('#v3north');
+    '<button type="button" id="v3north" title="Turn the map to north" aria-label="Turn the map to north" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l4.5 9.5h-9z" fill="#F0605D"/><path d="M12 21.5l-4.5-9.5h9z" fill="currentColor"/></svg></button>' +
+    '<button type="button" id="v3more" title="Tilt and turn" aria-label="Tilt and turn" aria-expanded="false" aria-controls="turnctl" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+  V3.d = d; V3.btn = d.querySelector('#v3btn'); V3.n = d.querySelector('#v3north'); V3.m = d.querySelector('#v3more');
   const b = document.getElementById('base'); if (b) b.after(d); else document.getElementById('ctlrow2').appendChild(d);
   V3.btn.addEventListener('click', () => { if (V3.btn.getAttribute('aria-disabled') === 'true') return; if (S.drawing) drawMode(false); map.set3D(!map.is3D()); });
   V3.n.addEventListener('click', () => map.north()); }
 function v3Sync(){ const on = map.is3D(), off = !!map._offline;
   V3.btn.setAttribute('aria-pressed', on); V3.btn.setAttribute('aria-disabled', off && !on ? 'true' : 'false');
   V3.btn.title = off ? 'No signal: 3D needs the terrain tiles' : on ? 'Back to the flat map' : 'Show the map in 3D, over the terrain';
-  V3.btn.setAttribute('aria-label', V3.btn.title); V3.n.hidden = !on; if (V3.t) V3.t.hidden = !on; }
-/* tilt and turn buttons on the right edge of the map while it is in 3D, for anyone who doesn't know the gestures: a tap
-   eases the view a step (10 degrees of tilt, 30 of turn), holding keeps it moving */
+  V3.btn.setAttribute('aria-label', V3.btn.title); V3.n.hidden = !on; V3.m.hidden = !on; if (!on && V3.open) V3.open(false); }
+/* tilt and turn buttons, for anyone who doesn't know the gestures: in 3D the arrow beside the compass drops them down in a
+   row under the 3D button. A tap eases the view a step (10 degrees of tilt, 30 of turn), holding keeps it moving. */
 { const d = document.createElement('div'); d.id = 'turnctl'; d.className = 'mapctl'; d.setAttribute('role', 'group'); d.setAttribute('aria-label', '3D view'); d.hidden = true;
   const ic = {up:'<path d="M3.5 19.5h17l-3.5-6.5h-10z"/><path d="M12 3.5v6M9 6.5l3-3 3 3"/>', down:'<path d="M4.5 13.5h15v6h-15z"/><path d="M12 3.5v6M9 6.5l3 3 3-3"/>',
     left:'<path d="M5.5 12.5a7 7 0 1 0 2.2-5.1"/><path d="M4.5 3.8v4.5h4.5"/>', right:'<path d="M18.5 12.5a7 7 0 1 1-2.2-5.1"/><path d="M19.5 3.8v4.5H15"/>'};
@@ -2808,7 +2809,13 @@ function v3Sync(){ const on = map.is3D(), off = !!map._offline;
     b.addEventListener('pointerdown', e => { e.preventDefault(); stop(); step(dp, db); held = setInterval(() => step(dp, db), 280); });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, stop));
     b.addEventListener('click', e => { if (e.detail === 0) step(dp, db); });   /* the keyboard (Enter or Space) */ });
-  ($('#mapwrap') || map.getContainer()).appendChild(d); V3.t = d; }
+  document.body.appendChild(d); V3.t = d;
+  const place = () => { const r = V3.d.getBoundingClientRect(); d.style.top = Math.round(r.bottom + 6) + 'px'; d.style.right = Math.max(6, Math.round(innerWidth - r.right)) + 'px'; };
+  V3.open = on => { on = !!on && map.is3D(); d.hidden = !on; V3.m.setAttribute('aria-expanded', on); V3.m.classList.toggle('on', on); if (on) place(); };
+  V3.m.addEventListener('click', () => V3.open(d.hidden));
+  /* closes on a tap anywhere but the buttons or the arrow, and follows the 3D button if the layout moves */
+  document.addEventListener('pointerdown', e => { if (!d.hidden && !d.contains(e.target) && !V3.m.contains(e.target)) V3.open(false); }, true);
+  addEventListener('resize', () => { if (!d.hidden) place(); }); map.ml.on('resize', () => { if (!d.hidden) place(); }); }
 map.ml.on('view3d', v3Sync); v3Sync();
 /* ?cam in the address: a readout of the camera (center, MapLibre zoom, tilt, direction), for setting tour views from screenshots */
 if (/[?&]cam\b/.test(location.search)){ const d = document.createElement('div'); d.id = 'camread'; document.body.appendChild(d);
@@ -4405,7 +4412,7 @@ const TOURS = {
    steps:[
     {t:'The map is yours to steer', q:'feat', m:'fac', lv:'auto', view:'trail', d3:false, cells:true, layers:[], hl:['#layerstog', '#toolstog', '#ctlbtn', '#v3btn'],
      x:'Each cell shows how many shelters, campsites, privies, parking areas, bridges and other facilities it holds. Three controls change what you see: Layers adds the facilities themselves, Map tools turns the cells off or selects them, and 3D tilts the map over the mountains. This tour uses each one.'},
-    {t:'Turn on 3D', q:'feat', m:'shel', lv:'hex', d3:true, cam:{at:[35.5642, -83.5451], z:12.48, pitch:56, bearing:75}, cells:true, layers:['shelters'], hl:['#v3btn', '#layerstog', '#turnctl'],
+    {t:'Turn on 3D', q:'feat', m:'shel', lv:'hex', d3:true, cam:{at:[35.5642, -83.5451], z:12.48, pitch:56, bearing:75}, cells:true, layers:['shelters'], turn:1, hl:['#v3btn', '#layerstog', '#v3more', '#turnctl'],
      x:'Pressing 3D tilts the map and raises the mountains. Here in the Great Smoky Mountains, Shelters is switched on under Layers: Silers Bald and Double Spring Gap shelters sit along the crest, with Mt. Collins Shelter beyond. Use the tilt and turn buttons on the right edge of the map, or drag with two fingers or the right mouse button, to turn and tilt the view.'},
     {t:'Turn the cells off', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[36.4091, -82.0132], z:12.55, pitch:62, bearing:33}, cells:false, tools:1, layers:['vistas'], hl:['#cellsbtn'],
      x:'Cells off, under Map tools, clears the colored grid so you can read the land itself. With Vistas switched on, the viewpoints along Iron Mountain in Tennessee appear, out to the Shady Valley overlook. Tap any symbol for its name.'},
@@ -4571,7 +4578,7 @@ function tourGo(k){ const T = TOURS[TOUR.id]; if (!T) return;  TOUR.k = Math.max
     if (bd){ if (TOUR.instant) map.fitBounds(bd, {animate:false, maxZoom:12, paddingTopLeft:[pl, 0]}); else map.flyToBounds(bd, {duration:1.2, maxZoom:12, paddingTopLeft:[pl, 0]}); } if (st.zoom && cells.length) setTimeout(() => { if (TOUR.id) map.flyTo(st.pick.near, st.zoom, {duration:.8}); }, 1300); } };
   /* the tour about the controls jumps between places hundreds of miles apart: rather than fly there in 3D (drawing and
      loading every place in between), the map fades out, jumps, and fades back in once the new view has drawn */
-  if (TOURS[TOUR.id].ctl){ const go = () => { tourD3(st); move(); tourHl(st); }; if ((ph && (st.cam || bd)) || tourFar(st, bd)) tourCut(go);   /* phones jump, so always behind the fade */
+  if (TOURS[TOUR.id].ctl){ const go = () => { tourD3(st); move(); if (V3.open) V3.open(!!st.turn); tourHl(st); }; if ((ph && (st.cam || bd)) || tourFar(st, bd)) tourCut(go);   /* phones jump, so always behind the fade */
     else { go(); const tk = ++TOUR.cut; map.ml.once('moveend', () => { if (tk === TOUR.cut) tourReady(tk); }); } }   /* a glide ends on the real ground too */
   else move();
   if (ph) tourScroll(); }
@@ -4620,7 +4627,7 @@ function tourStart(id){ if (HOWK >= 0) howEnd(); if (S.side.qs){ S.side.qs = fal
 function tourEnd(){ const was = TOUR.id; document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl'));
   TOUR.cut++; tourFade(false);
   if (TOUR.prev && was){ const P = TOUR.prev; TOUR.prev = null; S.ownLayers = null; TOUR.ending = true; tourCtl(Object.assign({layers:P.layers, cells:P.cells, d3:P.d3}, TOURS[was].ctl ? {tools:0} : {})); TOUR.ending = false; document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl')); }
-  document.body.classList.remove('tourctl'); TOUR.id = null; const d = $('#tour'); if (d) d.remove(); setTimeout(() => { if (window.layersPlace) layersPlace(); if (window.lvPlace) lvPlace(); }, 50); if (document.body.classList.contains('touring')){ tourMobile(false); lockW = 0; lockMapHeight(); map.invalidateSize(); } tourSitesClear(); if (TOUR.leg != null){ S.legend = TOUR.leg; TOUR.leg = null; legend(); } try { const h = new URLSearchParams(location.hash.slice(1)); if (h.has('tour')){ h.delete('tour'); history.replaceState(null, '', '#' + h.toString()); } } catch (x) {} }
+  if (V3.open) V3.open(false); document.body.classList.remove('tourctl'); TOUR.id = null; const d = $('#tour'); if (d) d.remove(); setTimeout(() => { if (window.layersPlace) layersPlace(); if (window.lvPlace) lvPlace(); }, 50); if (document.body.classList.contains('touring')){ tourMobile(false); lockW = 0; lockMapHeight(); map.invalidateSize(); } tourSitesClear(); if (TOUR.leg != null){ S.legend = TOUR.leg; TOUR.leg = null; legend(); } try { const h = new URLSearchParams(location.hash.slice(1)); if (h.has('tour')){ h.delete('tour'); history.replaceState(null, '', '#' + h.toString()); } } catch (x) {} }
 document.addEventListener('keydown', e => { if (!TOUR.id || /input|select|textarea/i.test((e.target.tagName || ''))) return;
   if (e.key === 'ArrowRight') tourGo(TOUR.k + 1); else if (e.key === 'ArrowLeft') tourGo(TOUR.k - 1); else if (e.key === 'Escape') tourEnd(); });
 /* the Tour chip sits inside the question it belongs to; it starts the tour without switching the question first */

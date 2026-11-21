@@ -207,15 +207,19 @@ button.tvapply:disabled{background:none;color:#8A97A6;border-color:#4A6182;curso
 #v3 button+button{border-left:1px solid var(--line)}#v3 button[hidden]{display:none}
 #v3 button[aria-pressed="true"]{background:#1E6FD9}#v3 button[aria-disabled="true"]{color:#60738B;cursor:default}
 #v3 svg{width:20px;height:20px;display:block}
-/* tilt and turn buttons, right edge of the map, in 3D only */
-#turnctl{position:absolute;right:10px;top:50%;transform:translateY(-50%);z-index:5;display:flex;flex-direction:column;padding:0;overflow:hidden;border-radius:14px;background:#0F1C2Ee6;border:1px solid #3A4E68;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+/* tilt and turn buttons: dropped down in a row under the 3D button (the arrow beside the compass) */
+#turnctl{position:fixed;z-index:1200;display:flex;flex-direction:row;padding:0;overflow:hidden;border-radius:14px;background:#0F1C2Ef2;border:1px solid #3A4E68;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 #turnctl[hidden]{display:none}
-#turnctl.tourhl{position:absolute;border-radius:14px}
-#turnctl button{width:42px;height:42px;background:none;border:0;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:none;-webkit-user-select:none;user-select:none}
-#turnctl button+button{border-top:1px solid #3A4E68}
+#turnctl.tourhl{position:fixed;border-radius:14px}
+#turnctl button{width:42px;height:40px;background:none;border:0;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:none;-webkit-user-select:none;user-select:none}
+#turnctl button+button{border-left:1px solid #3A4E68}
 @media (hover:hover){#turnctl button:hover{background:#1E6FD9}}
 #turnctl button:active{background:#1E6FD9}
 #turnctl button:focus-visible{outline:2px solid #F0C419;outline-offset:-2px}
+#v3 #v3more{min-width:26px;padding:0 3px}
+#v3 #v3north{min-width:32px;padding:0 5px}
+#v3 #v3more svg{width:18px;height:18px;transition:transform .2s}
+#v3 #v3more.on svg{transform:rotate(180deg)}
 #turnctl svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 body.stackui #v3{border-radius:999px;background:#0F1C2Ee6;border-color:#3A4E68}
 /* phones: cell size, basemap and 3D share the width of the map, the drop-downs taking what the 3D button leaves */
