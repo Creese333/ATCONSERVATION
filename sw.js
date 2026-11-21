@@ -31,8 +31,9 @@
    atc-v21: the same, with the tilt and turn buttons in a dropdown under the 3D button.
    atc-v22: the same, with the tour wording for the dropdown.
    atc-v23: the same, with smaller photo previews on phones.
-   atc-v24: the same, with Casey's new views for three 3D tour stops. */
-const VER = 'atc-v24';
+   atc-v24: the same, with Casey's new views for three 3D tour stops.
+   atc-v25: the same, with Shelters opening the facilities question. */
+const VER = 'atc-v25';
 const OFF = 'atoffline-1';          /* filled by Save for offline; never cleared here */
 const LIVE = 'atlive-1';            /* last copy of the trail line, mile points and point layers (shelters, campsites...) */
 const DATA = 'https://grid.trailassessment.org';   /* the data site: /data/ and /images/birds/ */
