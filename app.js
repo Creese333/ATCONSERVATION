@@ -4405,8 +4405,8 @@ const TOURS = {
    steps:[
     {t:'The map is yours to steer', q:'feat', m:'fac', lv:'auto', view:'trail', d3:false, cells:true, layers:[], hl:['#layerstog', '#toolstog', '#ctlbtn', '#v3btn'],
      x:'Each cell shows how many shelters, campsites, privies, parking areas, bridges and other facilities it holds. Three controls change what you see: Layers adds the facilities themselves, Map tools turns the cells off or selects them, and 3D tilts the map over the mountains. This tour uses each one.'},
-    {t:'Turn on 3D', q:'feat', m:'shel', lv:'hex', d3:true, cam:{at:[35.5642, -83.5451], z:12.48, pitch:56, bearing:75}, cells:true, layers:['shelters'], hl:['#v3btn', '#layerstog'],
-     x:'Pressing 3D tilts the map and raises the mountains. Here in the Great Smoky Mountains, Shelters is switched on under Layers: Silers Bald and Double Spring Gap shelters sit along the crest, with Mt. Collins Shelter beyond. Drag with two fingers, or with the right mouse button, to turn and tilt the view.'},
+    {t:'Turn on 3D', q:'feat', m:'shel', lv:'hex', d3:true, cam:{at:[35.5642, -83.5451], z:12.48, pitch:56, bearing:75}, cells:true, layers:['shelters'], hl:['#v3btn', '#layerstog', '#turnctl'],
+     x:'Pressing 3D tilts the map and raises the mountains. Here in the Great Smoky Mountains, Shelters is switched on under Layers: Silers Bald and Double Spring Gap shelters sit along the crest, with Mt. Collins Shelter beyond. Use the tilt and turn buttons on the right edge of the map, or drag with two fingers or the right mouse button, to turn and tilt the view.'},
     {t:'Turn the cells off', q:'feat', m:'vist', lv:'hex', d3:true, cam:{at:[36.4091, -82.0132], z:12.55, pitch:62, bearing:33}, cells:false, tools:1, layers:['vistas'], hl:['#cellsbtn'],
      x:'Cells off, under Map tools, clears the colored grid so you can read the land itself. With Vistas switched on, the viewpoints along Iron Mountain in Tennessee appear, out to the Shady Valley overlook. Tap any symbol for its name.'},
     {t:'Maintained landscapes', q:'feat', m:'mlac', lv:'hex', d3:true, cam:{at:[36.1143, -82.0605], z:13.29, pitch:55, bearing:49}, cells:false, layers:['mland'], hl:['#layerstog'],
@@ -4479,7 +4479,8 @@ function tourCtl(st){ const ph = isPhone();
   if (!TOUR.id || !TOURS[TOUR.id].ctl || TOUR.ending) tourD3(st);   /* in the controls tour, with the camera move (tourGo) */
   if ('tools' in st || TOURS[TOUR.id].ctl) tourTools(!!st.tools);
   if (window.layersPlace) layersPlace(); if (window.lvPlace) lvPlace();   /* the control rows, laid out again for what is shown now */
-  document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl'));
+  tourHl(st); }
+function tourHl(st){ document.querySelectorAll('.tourhl').forEach(e => e.classList.remove('tourhl'));
   (st.hl || []).forEach(s => { const e = document.querySelector(s); if (e && e.getClientRects().length){ void e.offsetWidth; e.classList.add('tourhl'); } }); }   /* shown (offsetParent is null for the fixed phone controls) */
 /* pop: once the camera has landed and the layer has loaded, open the popup of the feature with a photo nearest the middle
    of the view (the vistas stop shows that vistas carry photos) */
@@ -4570,7 +4571,7 @@ function tourGo(k){ const T = TOURS[TOUR.id]; if (!T) return;  TOUR.k = Math.max
     if (bd){ if (TOUR.instant) map.fitBounds(bd, {animate:false, maxZoom:12, paddingTopLeft:[pl, 0]}); else map.flyToBounds(bd, {duration:1.2, maxZoom:12, paddingTopLeft:[pl, 0]}); } if (st.zoom && cells.length) setTimeout(() => { if (TOUR.id) map.flyTo(st.pick.near, st.zoom, {duration:.8}); }, 1300); } };
   /* the tour about the controls jumps between places hundreds of miles apart: rather than fly there in 3D (drawing and
      loading every place in between), the map fades out, jumps, and fades back in once the new view has drawn */
-  if (TOURS[TOUR.id].ctl){ const go = () => { tourD3(st); move(); }; if ((ph && (st.cam || bd)) || tourFar(st, bd)) tourCut(go);   /* phones jump, so always behind the fade */
+  if (TOURS[TOUR.id].ctl){ const go = () => { tourD3(st); move(); tourHl(st); }; if ((ph && (st.cam || bd)) || tourFar(st, bd)) tourCut(go);   /* phones jump, so always behind the fade */
     else { go(); const tk = ++TOUR.cut; map.ml.once('moveend', () => { if (tk === TOUR.cut) tourReady(tk); }); } }   /* a glide ends on the real ground too */
   else move();
   if (ph) tourScroll(); }
