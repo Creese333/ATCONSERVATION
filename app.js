@@ -2794,7 +2794,21 @@ const V3 = {};
 function v3Sync(){ const on = map.is3D(), off = !!map._offline;
   V3.btn.setAttribute('aria-pressed', on); V3.btn.setAttribute('aria-disabled', off && !on ? 'true' : 'false');
   V3.btn.title = off ? 'No signal: 3D needs the terrain tiles' : on ? 'Back to the flat map' : 'Show the map in 3D, over the terrain';
-  V3.btn.setAttribute('aria-label', V3.btn.title); V3.n.hidden = !on; }
+  V3.btn.setAttribute('aria-label', V3.btn.title); V3.n.hidden = !on; if (V3.t) V3.t.hidden = !on; }
+/* tilt and turn buttons on the right edge of the map while it is in 3D, for anyone who doesn't know the gestures: a tap
+   eases the view a step (10 degrees of tilt, 30 of turn), holding keeps it moving */
+{ const d = document.createElement('div'); d.id = 'turnctl'; d.className = 'mapctl'; d.setAttribute('role', 'group'); d.setAttribute('aria-label', '3D view'); d.hidden = true;
+  const ic = {up:'<path d="M3.5 19.5h17l-3.5-6.5h-10z"/><path d="M12 3.5v6M9 6.5l3-3 3 3"/>', down:'<path d="M4.5 13.5h15v6h-15z"/><path d="M12 3.5v6M9 6.5l3 3 3-3"/>',
+    left:'<path d="M5.5 12.5a7 7 0 1 0 2.2-5.1"/><path d="M4.5 3.8v4.5h4.5"/>', right:'<path d="M18.5 12.5a7 7 0 1 1-2.2-5.1"/><path d="M19.5 3.8v4.5H15"/>'};
+  const B = [['up', 10, 0, 'Tilt toward the horizon'], ['down', -10, 0, 'Tilt to look down'], ['left', 0, -30, 'Turn left'], ['right', 0, 30, 'Turn right']];
+  d.innerHTML = B.map(b => `<button type="button" data-k="${b[0]}" title="${b[3]}" aria-label="${b[3]}"><svg viewBox="0 0 24 24" aria-hidden="true">${ic[b[0]]}</svg></button>`).join('');
+  const step = (dp, db) => { const m = map.ml; m.easeTo({pitch:Math.max(0, Math.min(70, m.getPitch() + dp)), bearing:m.getBearing() + db, duration:300, easing:x => x}); };
+  let held = 0;
+  d.querySelectorAll('button').forEach((b, i) => { const [, dp, db] = B[i], stop = () => { clearInterval(held); held = 0; };
+    b.addEventListener('pointerdown', e => { e.preventDefault(); stop(); step(dp, db); held = setInterval(() => step(dp, db), 280); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, stop));
+    b.addEventListener('click', e => { if (e.detail === 0) step(dp, db); });   /* the keyboard (Enter or Space) */ });
+  ($('#mapwrap') || map.getContainer()).appendChild(d); V3.t = d; }
 map.ml.on('view3d', v3Sync); v3Sync();
 /* ?cam in the address: a readout of the camera (center, MapLibre zoom, tilt, direction), for setting tour views from screenshots */
 if (/[?&]cam\b/.test(location.search)){ const d = document.createElement('div'); d.id = 'camread'; document.body.appendChild(d);

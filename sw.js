@@ -25,8 +25,9 @@
    atc-v15: the same, with the tour's popup leaving the view still and computers showing the phone views' ground.
    atc-v16: the same, with the 3D tour cutting between places behind a fade and fetching the next stop's tiles ahead.
    atc-v17: the same, with the tour's fade back in after 0.6 s at most.
-   atc-v18: the same, with the tour's views stood on the real ground (not sea level). */
-const VER = 'atc-v18';
+   atc-v18: the same, with the tour's views stood on the real ground (not sea level).
+   atc-v19: the same, with mouse tilt and the tilt and turn buttons in 3D. */
+const VER = 'atc-v19';
 const OFF = 'atoffline-1';          /* filled by Save for offline; never cleared here */
 const LIVE = 'atlive-1';            /* last copy of the trail line, mile points and point layers (shelters, campsites...) */
 const DATA = 'https://grid.trailassessment.org';   /* the data site: /data/ and /images/birds/ */
