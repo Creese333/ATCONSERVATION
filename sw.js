@@ -34,7 +34,7 @@
    atc-v24: the same, with Casey's new views for three 3D tour stops.
    atc-v25: the same, with Shelters opening the facilities question.
    atc-v26: the same, with the search description and link preview. */
-const VER = 'atc-v26';
+const VER = 'atc-v27';
 const OFF = 'atoffline-1';          /* filled by Save for offline; never cleared here */
 const LIVE = 'atlive-1';            /* last copy of the trail line, mile points and point layers (shelters, campsites...) */
 const DATA = 'https://grid.trailassessment.org';   /* the data site: /data/ and /images/birds/ */
