@@ -200,7 +200,7 @@ const PHEN = [
 const PHSET = {'Forest pests':'pest', 'Early detection (EDRR)':'pinv', 'Established priority':'pinv'};
 const PINVG = {EDRR:'Early detection (EDRR)', Priority:'Established priority'};
 const PHSP = PHEN.flatMap(g => g[1].map(([common, sci, kind, cand]) => ({common, sci, key:sci.toLowerCase().replace(/[^a-z]+/g, '-'), group:g[0], kind:kind || 'plant', cand:!!cand, set:PHSET[g[0]] || 'phen', pest:!!PHSET[g[0]]})));
-/* "Where do the lightning bugs of our childhood still glow?": every iNaturalist firefly record in the trail's project
+/* "Where do fireflies light up the trail?": every iNaturalist firefly record in the trail's project
    (data/fireflies.json, built weekly by build_fireflies.py), named by the 2024 firefly species checklist. The list: three groups,
    then each species with records. Lightning bugs flash or glow at night; the daytime (dark) fireflies don't light up as adults.
    Records named only Photinus stay out of both groups, since that genus now holds the winter firefly and its relatives
@@ -2087,7 +2087,7 @@ for (let i = Q.length - 1; i >= 0; i--) if (!D.themes[Q[i].th]) Q.splice(i, 1);
     use:'Where forest pests have been recorded along the trail since 2010, year by year, from research-grade iNaturalist records and EDDMapS reports, updated weekly: spotted lanternfly, spongy moth, hemlock woolly adelgid, beech leaf disease, emerald ash borer, elongate hemlock scale, and others with 100 or more iNaturalist records, most recorded first. Year first recorded maps the cells with a record by the year shown, and Play steps through the years; Share of records, by year shows how much of each cell\u2019s iNaturalist records the pest makes up. Visualizations add its range along the trail and the cells with records by year. Records follow observers, so a first record marks when a pest was noticed, and a blank cell means nothing reported, not absence.'})); }
 /* fireflies: the flowering engine on the firefly records (see ffData) */
 { const p = Q.find(q => q.id === 'phen'); if (p){ const pm = id => p.m.find(m => m.id === id);
-  Q.push(Object.assign({}, p, {id:'ffly', hue:HUE.ffly, title:'Where do the lightning bugs of our childhood still glow?',
+  Q.push(Object.assign({}, p, {id:'ffly', hue:HUE.ffly, title:'Where do fireflies light up the trail?',
     use:'Where fireflies have been recorded along the trail, from every iNaturalist firefly record in the trail’s project, updated weekly and named by the 2024 firefly species checklist. Pick all fireflies, the lightning bugs (the night flashers and glowers), the daytime fireflies that don’t light up as adults, or a single species. Records are research grade or still waiting for an ID, since many fireflies are only named to genus. Records, week by week plays the season, from winter fireflies in early spring to the summer flashers. Records follow observers, so towns and busy trailheads look richer, and a blank cell means none reported, not none there.',
     m:[{id:'rec', label:'Records', hasTxt:() => 'have records', int:1, hollow0:1, none:'None recorded', noun:['record','records'],
         fn:(lv, c) => { const A = phAgg(lv); return A ? A.any[c] : null; },
