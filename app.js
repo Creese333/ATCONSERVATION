@@ -3684,7 +3684,10 @@ document.addEventListener('click', e => { const t = e.target.closest && e.target
   if (t.dataset.howto) howStart(); else if (t.dataset.hown){ HOWK = Math.min(HOWTO.length - 1, HOWK + 1); howDraw(); } else if (t.dataset.howb){ HOWK = Math.max(0, HOWK - 1); howDraw(); } else howEnd(); });
 document.addEventListener('keydown', e => { if (HOWK < 0) return; if (e.key === 'Escape') howEnd(); else if (e.key === 'ArrowRight' && !/input|select|textarea/i.test(e.target.tagName || '')){ HOWK = Math.min(HOWTO.length - 1, HOWK + 1); howDraw(); } else if (e.key === 'ArrowLeft' && !/input|select|textarea/i.test(e.target.tagName || '')){ HOWK = Math.max(0, HOWK - 1); howDraw(); } });
 { const hc = $('header .hctl'), hb = document.createElement('button'); hb.type = 'button'; hb.id = 'howbtn'; hb.innerHTML = '<svg viewBox="0 1.3 24 24" width="17" height="17" aria-hidden="true"><path d="M8.6 8.4a3.5 3.5 0 0 1 6.8 1.1c0 2.3-3.4 2.9-3.4 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="18.9" r="1.6" fill="currentColor"/></svg>'; hb.title = 'How to use'; hb.setAttribute('aria-label', 'How to use'); hb.dataset.howto = '1'; if (hc) hc.insertBefore(hb, $('#aboutbtn'));
-  addEventListener('resize', () => { if (HOWK >= 0) howDraw(); });
+  /* only when the window really changes size: the page also sends itself resize signals when parts of it move (the
+     highlight the walkthrough adds is one), and redrawing on those rebuilt the card under the person's finger */
+  let howSz = innerWidth + 'x' + innerHeight;
+  addEventListener('resize', () => { const k = innerWidth + 'x' + innerHeight; if (k === howSz) return; howSz = k; if (HOWK >= 0) howDraw(); });
   /* once, on a first visit (not when a link opens a tour) */
   setTimeout(() => { let seen = 0; try { seen = store.get('howseen', 0); } catch (e) {} if (!seen && !/tour=/.test(location.hash) && !(typeof TOUR !== 'undefined' && TOUR.id)) howStart(); }, 2200); }
 const EXTHUCQ = new Set(['inv', 'pest', 'wx']);   /* questions that open on the HUC10 watershed cells */
