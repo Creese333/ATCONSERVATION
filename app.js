@@ -5221,6 +5221,10 @@ $('#stripsvg').addEventListener('pointermove', e => { const i = binAt(e); if (i 
   const club = b.club != null ? ', ' + shortClub(cat('club', b.club) || '') : '';
   let txt = S.m.find ? 'not recorded' : (S.m.none ? S.m.none.toLowerCase().replace('nps - appa', 'NPS - APPA') : 'no data'); if (b.val != null) txt = S.m.find ? 'recorded in this stretch' : S.m.yn ? S.m.yn + ' in this stretch' : S.m.kind === 'cat' ? 'mostly ' + show(S.m, b.val) : (S.m.unit === '%' ? fmt(b.val, 1) + '%' : fmt(b.val, b.val < 10 ? 1 : 0)) + ` on average per ${LV[stripLv].name} cell`;
   $('#stripread').textContent = `${where}${club}: ${txt}` + (ELEV ? `; trail about ${fmt(Math.round(elevAt((i + .5) * BIN) / 100) * 100, 0)} ft` : ''); });
+/* fold the chart down to its title bar and back (computers); it opens on every visit */
+$('#stripmin').addEventListener('click', () => { const b = $('#stripmin'), open = !document.body.classList.toggle('stripmin');
+  b.setAttribute('aria-expanded', open); b.title = open ? 'Hide the chart' : 'Show the chart'; if (open) strip();
+  setTimeout(() => map.ml.resize(), 0); });
 $('#stripsvg').addEventListener('pointerleave', () => { $('#shover').setAttribute('opacity', 0); });
 $('#stripsvg').addEventListener('click', e => { const i = binAt(e); if (i < 0) return; const L_ = D.levels.wheel, pts = [];
   for (let c = 0; c < L_.id.length; c++) if (L_.mi[c] >= i*BIN - BIN && L_.mi[c] < (i+2)*BIN) pts.push(L_.c[c]);
