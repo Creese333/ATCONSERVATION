@@ -96,7 +96,7 @@ CATCOL.WX_WETM = [['January','#2F4B7C'],['February','#46669A'],['March','#6E8FBF
 CATCOL.TSR = [['Good','#3FA672'],['Neutral (flat)','#A7B3C2'],['Poor','#E39A3B'],['Very poor','#C8323C']]; D.cats.TSR = CATCOL.TSR.map(e => e[0]);
 const CATMAP = {}; for (const k in CATCOL){ CATMAP[k] = new Map(CATCOL[k].map(e => [e[0], e])); }
 /* Blue Ridge color scheme */
-const HUE = {lands:'#3B82F6', veg:'#3FA796', inat:'#F57C1F', live:'#8FD3B6', ebird:'#1E7FC6', nrpz:'#9B6BC8', eff:'#B03A73', soil:'#7A4A24', feat:'#2F7A3B', wet:'#1FA9C9', rest:'#821225', phen:'#F0C419', hist:'#A08C5B', pest:'#C0502E', pinv:'#D9661A', cult:'#5E8C31', geo:'#6B7F94', wx:'#4A7FB5', tvul:'#6A4FB3', mig:'#05D16D'};
+const HUE = {lands:'#3B82F6', veg:'#3FA796', inat:'#F57C1F', live:'#8FD3B6', ebird:'#1E7FC6', nrpz:'#9B6BC8', eff:'#B03A73', soil:'#7A4A24', feat:'#2F7A3B', wet:'#1FA9C9', rest:'#821225', phen:'#F0C419', hist:'#A08C5B', pest:'#C0502E', ffly:'#B5D334', pinv:'#D9661A', cult:'#5E8C31', geo:'#6B7F94', wx:'#4A7FB5', tvul:'#6A4FB3', mig:'#05D16D'};
 /* eBird habitat groups: each has a species count field (_SPP) and a species list field (_LIST); exports spell out the shortened label */
 const BIRD_GROUPS = [['FOREST_INT','Forest interior'],['FOREST_GEN','Forest generalist'],['CONIFER','High-elev. conifer','High-elevation conifer'],['SHRUB','Shrubland'],['GRASS','Grassland'],
   ['EDGE','Edge'],['WETLAND','Wetland'],['RIPARIAN','Riparian'],['WATERBIRD','Waterbird'],['SHORE','Shorebird'],['SEABIRD','Seabird']]
@@ -200,14 +200,67 @@ const PHEN = [
 const PHSET = {'Forest pests':'pest', 'Early detection (EDRR)':'pinv', 'Established priority':'pinv'};
 const PINVG = {EDRR:'Early detection (EDRR)', Priority:'Established priority'};
 const PHSP = PHEN.flatMap(g => g[1].map(([common, sci, kind, cand]) => ({common, sci, key:sci.toLowerCase().replace(/[^a-z]+/g, '-'), group:g[0], kind:kind || 'plant', cand:!!cand, set:PHSET[g[0]] || 'phen', pest:!!PHSET[g[0]]})));
+/* "Where do the lightning bugs of our childhood still glow?": every iNaturalist firefly record in the trail's project
+   (data/fireflies.json, built weekly by build_fireflies.py), named by the 2024 firefly species checklist. The list: three groups,
+   then each species with records. Lightning bugs flash or glow at night; the daytime (dark) fireflies don't light up as adults.
+   Records named only Photinus stay out of both groups, since that genus now holds the winter firefly and its relatives
+   (formerly Ellychnia), which are dark. Research-grade and needs-ID records both count: many fireflies never get past genus. */
+const FFDARKP = new Set(['Photinus alexanderi', 'Photinus autumnalis', 'Photinus bivulnerus', 'Photinus californicus', 'Photinus captiosus', 'Photinus corruscus',
+  'Photinus faculus', 'Photinus fenderi', 'Photinus flavicollis', 'Photinus granulicollis', 'Photinus greeni', 'Photinus hatchi', 'Photinus irroratus',
+  'Photinus lacustris', 'Photinus lawrencei', 'Photinus megistus']);
+const FFLIGHTG = new Set(['Photinus', 'Photuris', 'Pyractomena', 'Phausis', 'Microphotus', 'Bicellonycha']), FFDARKG = new Set(['Lucidota', 'Pyropyga', 'Pollaclasis']);
+function ffKind(t){ const g = String(t.n).split(' ')[0];
+  if (t.r === 'species' || t.r === 'subspecies') return g === 'Photinus' ? (FFDARKP.has(t.n) ? 'dark' : 'light') : FFLIGHTG.has(g) ? 'light' : FFDARKG.has(g) ? 'dark' : '';
+  if (t.r === 'genus') return g === 'Photinus' ? '' : FFLIGHTG.has(g) ? 'light' : FFDARKG.has(g) ? 'dark' : '';
+  return t.n === 'Photurinae' ? 'light' : ''; }
+const FFG = {light:'Lightning bugs', dark:'Daytime fireflies', '':'Other fireflies'};
+PHSP.push({common:'All fireflies', sci:'Lampyridae', key:'ffly-all', group:'Fireflies', kind:'ffly', set:'ffly', ffk:'all'},
+  {common:'Lightning bugs (flash or glow at night)', sci:'Lampyridae', key:'ffly-light', group:'Fireflies', kind:'ffly', set:'ffly', ffk:'light'},
+  {common:'Daytime fireflies (no light as adults)', sci:'Lampyridae', key:'ffly-dark', group:'Fireflies', kind:'ffly', set:'ffly', ffk:'dark'});
+let FFP = null, FFJ = null;
+/* the file, once; its species join the list, most recorded first */
+function ffData(){ if (!FFP) FFP = fetch(SRC + 'data/fireflies.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+    .then(j => { FFJ = j; j.taxa.forEach((t, i) => { t.i = i; t.kind = ffKind(t); });
+      j.taxa.filter(t => t.ck && t.r === 'species').sort((a, b) => b.k - a.k).forEach(t => { const key = 'ffly-' + t.n.toLowerCase().replace(/[^a-z]+/g, '-');
+        if (!PHSP.some(x => x.key === key)) PHSP.push({common:t.c || t.n, sci:t.n, key, group:FFG[t.kind], kind:'ffly', set:'ffly', ffx:[t.i]}); });
+      if (S.q.id === 'ffly'){ BRK.clear(); side(); redraw(); } return j; })
+    .catch(e => { FFP = null; throw e; });
+  return FFP; }
+function ffLoad(sp, st){ ffData().then(j => { const on = sp.ffx ? new Set(sp.ffx) : new Set(j.taxa.filter(t => sp.ffk === 'all' || t.kind === sp.ffk).map(t => t.i));
+    const pts = j.pts.filter(p => on.has(p[2]));
+    st.pts = pts.map(p => [p[0], p[1], 5, p[3], p[4], p[5]]); st.n = st.pts.length; st.rg = pts.reduce((t, p) => t + (p[6] ? 1 : 0), 0);
+    st.drop = sp.ffk === 'all' ? {5:Object.values(j.drop || {}).reduce((t, v) => t + v, 0)} : {}; st.built = j.at; phDone(sp, st); })
+  .catch(e => { st.st = 'error'; st.msg = e.message; if (PHQ()) side(); }); }
+/* how many checklist species are recorded in each cell (any group picked) */
+const FFSPP = {};
+function ffSpp(lv, c){ if (!FFJ){ ffData().catch(() => {}); return null; } let A = FFSPP[lv];
+  if (!A || A.lev !== D.levels[lv]){ const n = D.levels[lv].id.length, sets = new Array(n); FFJ.pts.forEach(p => { const t = FFJ.taxa[p[2]]; if (!t.ck || t.r !== 'species') return;
+      const c2 = phCell(lv, p[3], p[4]); if (c2 < 0) return; (sets[c2] || (sets[c2] = new Set())).add(p[2]); });
+    A = FFSPP[lv] = {lev:D.levels[lv], v:Array.from(sets, x => x ? x.size : 0)}; }
+  return A.v[c] || 0; }
+function ffStatus(sp, st, A){ const hid = (st.drop || {})[5] || 0;
+  return `${fmt(st.n, 0)} iNaturalist ${st.n === 1 ? 'record' : 'records'} (${fmt(st.rg, 0)} research grade; the rest still need an ID)${hid ? `, plus ${fmt(hid, 0)} with a hidden location, not mapped` : ''}. ` +
+    `${fmt(A ? A.placed : 0, 0)} fall in ${S.ext === 'huc' ? 'watershed' : 'corridor'} cells. Updated weekly${st.built ? ' (last ' + new Date(st.built).toLocaleDateString('en-US', {month:'short', day:'numeric'}) + ')' : ''}; records follow observers, so a blank cell means none reported, not none there.`; }
+/* the cell panel: the firefly species recorded there, then the picked group or species week by week */
+function ffSection(lv, c){ if (!FFJ){ ffData().then(() => { if (S.cell != null || S.box) profile(); }).catch(() => {}); return `<div class="sec" style="--hue:${HUE.ffly}"><h3>Fireflies</h3><p class="none">Loading…</p></div>`; }
+  const cs = new Set(Array.isArray(c) ? c : [c]), many = cs.size > 1, by = new Map();
+  FFJ.pts.forEach(p => { const c2 = phCell(lv, p[3], p[4]); if (cs.has(c2)) by.set(p[2], (by.get(p[2]) || 0) + 1); });
+  const rows = [...by].map(([i, n]) => ({t:FFJ.taxa[i], n})).sort((a, b) => b.n - a.n), sp = rows.filter(x => x.t.ck && x.t.r === 'species');
+  const nm = t => t.r === 'species' ? `${t.c ? esc(t.c) + ' ' : ''}<em>${esc(t.n)}</em>` : `<em>${esc(t.n)}</em> <span class="sub">(${t.r} only)</span>`;
+  let h = `<div class="sec" style="--hue:${HUE.ffly}"><h3>Fireflies</h3>`;
+  h += rows.length ? `<p style="margin:0 0 4px">${sp.length} ${sp.length === 1 ? 'species' : 'species'} on the firefly checklist recorded ${many ? 'in the selected cells' : 'here'}, ${fmt(rows.reduce((t, x) => t + x.n, 0), 0)} records in all (iNaturalist, weekly).</p>` +
+      `<ul class="spp">${rows.map(x => `<li>${nm(x.t)} <span class="sub">${x.t.kind === 'light' ? 'lightning bug' : x.t.kind === 'dark' ? 'daytime' : ''}${x.t.kind ? ' · ' : ''}${fmt(x.n, 0)}</span></li>`).join('')}</ul>`
+    : `<p class="none">No firefly records ${many ? 'in the selected cells' : 'in this cell'} yet.</p>`;
+  if (PHQ() && phAgg(lv)){ const core = phSectionCore(lv, c).replace(/^<div class="sec"[^>]*><h3>[^<]*<\/h3>/, '').replace(/<\/div>$/, ''); h += `<p style="margin:10px 0 4px;font-weight:600">On the map</p>` + core; }
+  return h + '</div>'; }
 /* two questions share this engine: flowering (plants) and forest pests */
 function PINVM(){ return S.q.id === 'inv' && !!(S.m && S.m.pinv); }
 const CULTPH = new Set(['Sanguinaria canadensis', 'Erythronium americanum', 'Trillium erectum', 'Hepatica acutiloba', 'Thalictrum thalictroides', 'Cardamine diphylla', 'Arisaema triphyllum', 'Maianthemum racemosum', 'Asarum canadense']);
 function CULTM(){ return S.q.id === 'cult' && !!(S.m && S.m.cphen); }
-function PHQ(){ return !(S.m && S.m.fhr) && (S.q.id === 'phen' || S.q.id === 'pest' || PINVM() || CULTM()); }
+function PHQ(){ return !(S.m && (S.m.fhr || S.m.noph)) && (S.q.id === 'phen' || S.q.id === 'pest' || S.q.id === 'ffly' || PINVM() || CULTM()); }
 /* the two questions that map spread (first year recorded), with species ranked by records */
 function SPREADQ(){ return !(S.m && S.m.fhr) && (S.q.id === 'pest' || PINVM()); }
-const phSetNow = () => S.q.id === 'pest' ? 'pest' : S.q.id === 'inv' ? 'pinv' : S.q.id === 'cult' ? 'cphen' : 'phen';
+const phSetNow = () => S.q.id === 'ffly' ? 'ffly' : S.q.id === 'pest' ? 'pest' : S.q.id === 'inv' ? 'pinv' : S.q.id === 'cult' ? 'cphen' : 'phen';
 const phList = (set = phSetNow()) => set === 'cphen' ? PHSP.filter(s => s.set === 'phen' && CULTPH.has(s.sci)) : PHSP.filter(s => s.set === set);
 /* record counts of the forest pests in the project, looked up once and kept 30 days; the extra candidates show at PHPESTMIN or more */
 const PHPESTMIN = 100, PHCNT = {}; let phCntRun = false;
@@ -219,6 +272,7 @@ let PHIDX, PHIDXV = null;
    mapped ones plus those whose location is hidden (obscured or private) or missing; from the loaded records, else the weekly index */
 const phCntStage = sp => sp.kind === 'plant' ? 1 : 5;
 function phTot(sp){ const s = phCntStage(sp), st = PHD[sp.key];
+  if (sp.set === 'ffly'){ if (!FFJ) return null; const k = FFJ.taxa.filter(t => sp.ffx ? sp.ffx.includes(t.i) : sp.ffk === 'all' || t.kind === sp.ffk).reduce((a, t) => a + t.k, 0); return {all:k, kept:k, hid:0}; }
   if (st && st.st === 'done'){ const k = st.pts.reduce((t, p) => t + (p[2] === s ? 1 : 0), 0), h = (st.drop || {})[s] || 0; return {all:k + h, kept:k, hid:h}; }
   const e = PHIDXV && PHIDXV.species[sp.key]; if (e && e.kept){ const k = e.kept[s] || 0, h = (e.drop || {})[s] || 0; return {all:k + h, kept:k, hid:h}; }
   return sp.pest && PHCNT[sp.key] != null ? {all:PHCNT[sp.key]} : null; }
@@ -262,7 +316,7 @@ const phSp = () => { const k = S.q.id + '|' + S.ph.sp + '|' + (S.m && S.m.pinv ?
   const v = phSpRaw(); if (!PHSPC) queueMicrotask(() => { PHSPC = null; }); PHSPC = {k, v}; return v; };
 const phMain = (sp = phSp()) => sp.kind === 'plant' ? 1 : sp.kind === 'adult' ? 4 : 5;
 const PHWORD = {1:'flowering', 2:'fruiting', 3:'in bud', 4:'adults', 5:'records'};
-const phNoun = () => phSp().kind === 'adult' ? 'adult' : 'flowering';
+const phNoun = () => phSp().kind === 'adult' ? 'adult' : phSp().kind === 'ffly' ? 'firefly' : 'flowering';
 const doyOf = d => { const t = new Date(d + 'T12:00:00'); if (isNaN(t)) return null; return Math.round((t - new Date(t.getFullYear(), 0, 1, 12)) / 864e5) + 1; };
 const wkOf = d => Math.min(52, Math.floor((d - 1) / 7) + 1);
 const doyDate = d => new Date(2021, 0, Math.round(d)).toLocaleDateString('en-US', {month:'short', day:'numeric'});
@@ -304,6 +358,7 @@ async function phBuilt(sp, st){ const ix = await phIdx(), e = ix && ix.species[s
   catch (err){ st.topErr = true; }
   phDone(sp, st); return true; }
 function phLoad(sp, live){ let st = PHD[sp.key]; if (st && (st.st === 'done' || st.st === 'loading')) return;
+  if (sp.set === 'ffly'){ ffLoad(sp, PHD[sp.key] = {st:'loading', pts:[], n:0}); return; }   /* fireflies: from data/fireflies.json only */
   if (!live){ st = PHD[sp.key] = {st:'loading', pts:[], n:0};
     phBuilt(sp, st).then(ok => { if (ok) return; delete PHD[sp.key]; phLoad(sp, true); }).catch(() => { delete PHD[sp.key]; phLoad(sp, true); }); return; }
   try { const x = JSON.parse(localStorage.getItem(phKey(sp))); if (x && Array.isArray(x.pts) && Date.now() - x.at < PHKEEP){ PHD[sp.key] = {st:'done', pts:x.pts, n:x.pts.length, at:x.at, taxon:x.taxon, nid:x.nid, drop:x.drop || {}, edd:x.edd || [], eddDup:x.eddDup || 0}; return; } } catch (e) {}
@@ -486,6 +541,8 @@ function phTickPos(){ const t = document.getElementById('phtick'), m = document.
 addEventListener('resize', () => { if (PHQ()) phTickPos(); });
 if (window.ResizeObserver && document.getElementById('ctls')) new ResizeObserver(() => { if (PHQ()) phTickPos(); }).observe(document.getElementById('ctls'));
 function phStatus(){ const sp = phSp(), st = PHD[sp.key];
+  if (sp.set === 'ffly' && st && st.st === 'done') return ffStatus(sp, st, phAgg(dispLevel()));
+  if (sp.set === 'ffly' && (!st || st.st === 'loading')) return 'Loading firefly records…';
   if (!st || st.st === 'loading') return `Loading research-grade records of ${esc(sp.common.toLowerCase())} from iNaturalist…` + (st && st.n ? ` ${fmt(st.n, 0)} so far` : '');
   if (st.st === 'error') return `Could not load from iNaturalist (${esc(st.msg || 'error')}). <button type="button" data-phref="1">Try again</button>`;
   const A = phAgg(dispLevel()), n = s => fmt(st.pts.reduce((t, p) => t + (p[2] === s ? 1 : 0), 0), 0);
@@ -505,7 +562,7 @@ function phYrNote(){ if (S.m.id === 'share') return phShNote(); const lv = dispL
 /* Priority invasives measure: the species-per-cell map, with a list to open one species' spread */
 function pinvPick(){ phIdx(); phPestCounts(); const L = phList('pinv').sort((a, b) => (PHCNT[b.key] || 0) - (PHCNT[a.key] || 0));
   return `<div class="phctl"><select id="pinvsel" aria-label="Priority invasive species"><option value="">All priority invasives: species per cell</option>` +
-    Object.values(PINVG).map(g => `<optgroup label="${esc(g)}">` + L.filter(s => s.group === g).map(s => `<option value="${s.key}">${esc(s.common)} (${esc(s.sci)})${(t => t ? ' · ' + fmt(t.all, 0) + ' records' : '')(phTot(s))}</option>`).join('') + '</optgroup>').join('') + '</select></div>' +
+    Object.values(PINVG).map(g => `<optgroup label="${esc(g)}">` + L.filter(s => s.group === g).map(s => `<option value="${s.key}">${esc(s.common)}${s.ffk ? '' : ` (${esc(s.sci)})`}${(t => t ? ' · ' + fmt(t.all, 0) + ' records' : '')(phTot(s))}</option>`).join('') + '</optgroup>').join('') + '</select></div>' +
     '<p class="phstat" style="margin-top:4px">Pick a species to see where it has spread along the trail, year by year, with Play to animate it.</p>'; }
 document.addEventListener('change', e => { if (e.target.id !== 'pinvsel' || !e.target.value) return; keepPlace(e.target, ['#phsp'], () => { S.ph.sp = e.target.value; S.ph.pick = true; S.ph.q = 'pinv'; S.ph.yr = 0; S.ph.sel = [];
   S.m = S.q.m.find(x => x.pinv && x.id === 'spread'); phLoad(phSp()); BRK.clear(); redraw(); }); });
@@ -573,7 +630,7 @@ function phStatusOnly(){ const e = $('#phstat'); if (e) e.innerHTML = phStatus()
 function phFixM(){ if (!PHQ() || S.m.find || !S.m.hideFn || !S.m.hideFn()) return; S.m = S.q.m.find(m => m.id === (SPREADQ() ? 'spread' : 'wave')); }
 function phBlock(){ const sp = phSp(), m = S.m, A = phAgg(dispLevel()), ys = A ? A.years : [], y = phYear();
   const L = phListShown(), grp = [...new Set(L.map(s => s.group))];
-  let h = `<div class="phctl"><select id="phsp" aria-label="Species">${PINVM() ? '<option value="">All priority invasives: species per cell</option>' : ''}` + grp.map(g => `<optgroup label="${esc(g)}">` + L.filter(s => s.group === g).map(s => `<option value="${s.key}"${s.key === sp.key ? ' selected' : ''}>${esc(s.common)} (${esc(s.sci)})${(t => t ? ' · ' + fmt(t.all, 0) + (s.kind === 'plant' ? ' flowering records' : ' records') : '')(phTot(s))}</option>`).join('') + '</optgroup>').join('') + '</select>' + (PINVM() ? `<div class="chips pinvm" role="group" aria-label="Show">${S.q.m.filter(x => x.pinv && (!x.hideFn || !x.hideFn())).map(x => `<button type="button" data-pinvm="${x.id}" aria-pressed="${x === S.m}">${esc(x.label)}</button>`).join('')}</div>` : '');
+  let h = `<div class="phctl"><select id="phsp" aria-label="Species">${PINVM() ? '<option value="">All priority invasives: species per cell</option>' : ''}` + grp.map(g => `<optgroup label="${esc(g)}">` + L.filter(s => s.group === g).map(s => `<option value="${s.key}"${s.key === sp.key ? ' selected' : ''}>${esc(s.common)}${s.ffk ? '' : ` (${esc(s.sci)})`}${(t => t ? ' · ' + fmt(t.all, 0) + (s.kind === 'plant' ? ' flowering records' : ' records') : '')(phTot(s))}</option>`).join('') + '</optgroup>').join('') + '</select>' + (PINVM() ? `<div class="chips pinvm" role="group" aria-label="Show">${S.q.m.filter(x => x.pinv && (!x.hideFn || !x.hideFn())).map(x => `<button type="button" data-pinvm="${x.id}" aria-pressed="${x === S.m}">${esc(x.label)}</button>`).join('')}</div>` : '');
   if (m.yr === 'wk'){ h += `<div class="wk"><button type="button" id="phplay">${phTimer ? 'Pause' : 'Play'}</button><input type="range" id="phwk" min="1" max="52" step="1" value="${S.ph.wk}" aria-label="Week of the year"></div><div class="wkl" id="phwkl">${wkLabel(S.ph.wk) + ' · ' + phYrsText()}</div>`;
     /* years before the first one with enough records are left off, so the row stays short */
     const ok = phYearsOk(A || {years:[], yn:{}}), ys2 = ok.length ? ys.filter(v => v >= ok[0]) : ys;
@@ -707,7 +764,7 @@ function phTrendBlock(){ const sp = phSp(), A = phAgg(dispLevel()); if (!A) retu
 /* the cell panel: records by week by stage, and the cell's season */
 /* the popup's Priority invasives section: every priority invasive plant the quarterly summary has in the cell(s), by tier,
    each opening its spread map; then the species on show in detail */
-function phSection(lv, c){ const sp = phSp(); if (sp.set === 'pinv') return ''; const core = phSectionCore(lv, c); if (!sp.pest || S.q.id !== 'pest') return core;
+function phSection(lv, c){ const sp = phSp(); if (sp.set === 'pinv') return ''; if (S.q.id === 'ffly' || sp.set === 'ffly') return S.q.id === 'ffly' ? ffSection(lv, c) : ''; const core = phSectionCore(lv, c); if (!sp.pest || S.q.id !== 'pest') return core;
   const cs = Array.isArray(c) ? c : [c], many = cs.length > 1, seen = new Map();
   cs.forEach(x => (invL('PEST_LIST', lv, x) || []).forEach(i => seen.set(i, (seen.get(i) || 0) + 1)));
   const items = [...seen].map(([i, n]) => { const nm = sppName(i), s = PHSP.find(p => p.pest && p.sci.toLowerCase() === String(nm.sci).toLowerCase()); return {n, nm, s}; })
@@ -1951,7 +2008,7 @@ const Q = [
      {id:'peak', get label(){ return `Peak ${phNoun()} date`; }, hasTxt:() => `have 5 or more ${phNoun()} records, enough to date`, sumFn:phSum, asc:1, sumTitle:() => `Earliest peak ${phNoun()} dates`, hideFn:() => phSp().kind === 'spread', d:0, none:'Fewer than 5 records', showFn:v => doyDate(v),
       fn:(lv, c) => { const A = phAgg(lv); return A ? A.pk[c] : null; }, colorFn:phDateCol, stripH:v => Math.max(1, v - 60), stripTop:() => 180,
       legendFn:() => phDateLegend(`Peak: the middle (median) date of the ${phNoun()} records in each cell, all years together. Cells need 5 or more records.`)},
-     {id:'len', get label(){ return phSp().kind === 'adult' ? 'Adult season length' : 'Flowering season length'; }, hasTxt:() => `have 8 or more ${phNoun()} records, enough for a season length`, sumFn:phSum, sumTitle:() => phSp().kind === 'adult' ? 'Longest adult seasons' : 'Longest flowering seasons', hideFn:() => phSp().kind === 'spread', d:0, unit:' days', none:'Fewer than 8 records',
+     {id:'len', get label(){ return phSp().kind === 'adult' ? 'Adult season length' : phSp().kind === 'ffly' ? 'Firefly season length' : 'Flowering season length'; }, hasTxt:() => `have 8 or more ${phNoun()} records, enough for a season length`, sumFn:phSum, sumTitle:() => phSp().kind === 'adult' ? 'Longest adult seasons' : phSp().kind === 'ffly' ? 'Longest firefly seasons' : 'Longest flowering seasons', hideFn:() => phSp().kind === 'spread', d:0, unit:' days', none:'Fewer than 8 records',
       showFn:v => `${Math.max(1, Math.round(v / 7))} ${Math.round(v / 7) > 1 ? 'weeks' : 'week'}`, fn:(lv, c) => { const A = phAgg(lv); return A ? A.len[c] : null; }, colorFn:phLenCol, stripTop:() => 70,
       legendFn:() => PHLEN.map(e => `<div class="row"><i style="background:${e[1]}"></i><span>${e[2]}</span></div>`).join('') + `<p class="sub">Duration: from the earliest 10% to the latest 10% of ${phNoun()} records in each cell, all years together. Cells need 8 or more records.</p>`}]},
  {id:'hist', th:'hist', hue:HUE.hist, ramp:'hist', title:'Where are the historic resources?',
@@ -2028,6 +2085,17 @@ const Q = [
 for (let i = Q.length - 1; i >= 0; i--) if (!D.themes[Q[i].th]) Q.splice(i, 1);
 { const p = Q.find(q => q.id === 'phen'); Q.push(Object.assign({}, p, {id:'pest', hue:HUE.pest, title:'Where are forest pests showing up?',
     use:'Where forest pests have been recorded along the trail since 2010, year by year, from research-grade iNaturalist records and EDDMapS reports, updated weekly: spotted lanternfly, spongy moth, hemlock woolly adelgid, beech leaf disease, emerald ash borer, elongate hemlock scale, and others with 100 or more iNaturalist records, most recorded first. Year first recorded maps the cells with a record by the year shown, and Play steps through the years; Share of records, by year shows how much of each cell\u2019s iNaturalist records the pest makes up. Visualizations add its range along the trail and the cells with records by year. Records follow observers, so a first record marks when a pest was noticed, and a blank cell means nothing reported, not absence.'})); }
+/* fireflies: the flowering engine on the firefly records (see ffData) */
+{ const p = Q.find(q => q.id === 'phen'); if (p){ const pm = id => p.m.find(m => m.id === id);
+  Q.push(Object.assign({}, p, {id:'ffly', hue:HUE.ffly, title:'Where do the lightning bugs of our childhood still glow?',
+    use:'Where fireflies have been recorded along the trail, from every iNaturalist firefly record in the trail’s project, updated weekly and named by the 2024 firefly species checklist. Pick all fireflies, the lightning bugs (the night flashers and glowers), the daytime fireflies that don’t light up as adults, or a single species. Records are research grade or still waiting for an ID, since many fireflies are only named to genus. Records, week by week plays the season, from winter fireflies in early spring to the summer flashers. Records follow observers, so towns and busy trailheads look richer, and a blank cell means none reported, not none there.',
+    m:[{id:'rec', label:'Records', hasTxt:() => 'have records', int:1, hollow0:1, none:'None recorded', noun:['record','records'],
+        fn:(lv, c) => { const A = phAgg(lv); return A ? A.any[c] : null; },
+        note:'iNaturalist records of the fireflies picked, all years and seasons together.'},
+       pm('wave'),
+       {id:'spp', noph:1, label:'Firefly species found', int:1, hollow0:1, none:'None recorded', noun:['species','species'], hasTxt:() => 'have a firefly species recorded',
+        fn:(lv, c) => ffSpp(lv, c), note:'How many species on the firefly checklist have iNaturalist records in each cell. Records named only to genus are left out.'},
+       pm('onset'), pm('peak'), pm('len')].filter(Boolean)})); } }
 /* forest health risk (USDA Forest Service NIDRM 2024): in "What shape is the forest in?" (FHRM, added there) */
 const FHRM = {id:'fhr', fhr:1, grp:'Risk of tree loss (USFS)', th:'fhr', label:'Forest at risk of tree loss (USFS)', f:'FHR_PCT', unit:'%', d:0, zero:1, zeroText:'None at risk', none:'No trees mapped',
      note:'Share of the treed area where 25% or more of the tree basal area is expected to die from insects and diseases over 2024 to 2038, without treatment (USDA Forest Service 2024 National Insect and Disease Risk Map, 240 m).'};
@@ -2617,11 +2685,11 @@ function sndBox(lv, cells){ const ci = cells.filter(c => has('snd', lv, c)); if 
 const sndSection = (lv, c) => sndBox(lv, [c]);
 
 const QGRP = {rest:'Priorities', tvul:'Priorities', pri:'Priorities', inv:'Threats', pest:'Threats', fcond:'Threats', pinv:'Threats', veg:'Plants and wildlife', bird:'Plants and wildlife', mig:'Plants and wildlife',
-  phen:'Plants and wildlife', rec:'Plants and wildlife', geo:'Land, water and climate', soil:'Land, water and climate', wet:'Land, water and climate', wx:'Land, water and climate', snd:'Land, water and climate', vs:'Land, water and climate',
+  phen:'Plants and wildlife', ffly:'Plants and wildlife', rec:'Plants and wildlife', geo:'Land, water and climate', soil:'Land, water and climate', wet:'Land, water and climate', wx:'Land, water and climate', snd:'Land, water and climate', vs:'Land, water and climate',
   hist:'Cultural resources', cult:'Cultural resources', feat:'Stewardship', eff:'Plants and wildlife', land:'Stewardship'};
 const QGOFF = new Set();   // folded question groups (filled from this browser's settings below)
 const qVis = x => x.id !== 'pri' || JERRY;
-{ const ord = ['rest','tvul','pri','feat','land','inv','fcond','pest','pinv','veg','bird','mig','phen','rec','eff','geo','soil','wet','wx','snd','vs','hist','cult']; Q.sort((a,b) => ord.indexOf(a.id) - ord.indexOf(b.id)); }
+{ const ord = ['rest','tvul','pri','feat','land','inv','fcond','pest','pinv','veg','bird','mig','phen','ffly','rec','eff','geo','soil','wet','wx','snd','vs','hist','cult']; Q.sort((a,b) => ord.indexOf(a.id) - ord.indexOf(b.id)); }
 Q.forEach(q => q.m.forEach(m => { m.q = q; m.th = m.th || q.th; m.kind = m.kind || 'seq';
   m.get = m.fn || ((lv,c) => val(m.th, m.f, lv, c));
   /* counts where a cell with none should stay unfilled, so every cell that has one stands out */
@@ -2927,6 +2995,7 @@ function draw(){ if (S.q.id === 'hist' && !S.m.find){ const sc = histScale();
   else if (S.ext === 'huc' && (!EXTQ.includes(S.q.id) || EXTNO.includes(S.q.id) || S.m.find)) setExt('corr', true);
   if (S.ext === 'corr') featSync();
   phQSync(); if (PHQ()){ if (SPREADQ()) phPestCounts(); phFixM(); phLoad(phSp()); } else if (phTimer) phPlay(false);
+  if (S.q.id === 'ffly' && !FFJ) ffData().catch(() => {});
   if (S.q.id === 'hist') histLoad();
   phTick();
   if (BIO && !BIO.done && S.ext === 'corr') bioApply();
@@ -2969,7 +3038,7 @@ function redraw(){ qOpenAt(); draw(); strip(); writeHash(); }
    for soils and wetlands only. Those cells are in soils_wetlands_huc10.json beside this page and load the first time they are asked for.
    Switching swaps the grid and the soils data under the page, so the map, rankings, strip, selection and export all follow.
    Choosing another question, or searching for a species, switches back to the corridor. */
-const EXTFILE = SRC + 'data/soils_wetlands_huc10.json', EXT = {corr:null, huc:null}, EXTQ = ['soil','wet','rec','inv','bird','eff','phen','pest','fcond','pinv','cult','geo','wx','tvul','snd','vs'];
+const EXTFILE = SRC + 'data/soils_wetlands_huc10.json', EXT = {corr:null, huc:null}, EXTQ = ['soil','wet','rec','inv','bird','eff','phen','ffly','pest','fcond','pinv','cult','geo','wx','tvul','snd','vs'];
 const SOILCATS = ['VULN_DOM','SOIL_SERIES','SOIL_TEXTURE','SOIL_ORDER','SOIL_DRAIN','SOIL_HSG','SOIL_FARM','SOIL_ECOSITE','SOIL_MAPUNIT','WET_DOM','WET_LDOM'];
 let extLoading = null;
 function extSnapshot(){ const cats = {}; SOILCATS.forEach(k => { if (D.cats[k]) cats[k] = D.cats[k]; });
@@ -3563,7 +3632,7 @@ function keepPlace(el, sels, fn){ const t0 = el && el.isConnected ? el.getBoundi
 /* a question or measure with its own choices (species, years, scale) opens the Selections block */
 const hasSel = () => PHQ() || (S.q.id === 'inv' && S.m.id === 'edrr') || (S.q.id === 'land' && S.m.id === 'acq');
 /* questions with an animation (Play), in the list; and whether the one on screen has one now */
-const QANIM = new Set(['mig', 'phen', 'pest', 'inv', 'cult', 'land', 'fcond', 'wx', 'eff']);
+const QANIM = new Set(['mig', 'phen', 'ffly', 'pest', 'inv', 'cult', 'land', 'fcond', 'wx', 'eff']);
 const PLAYQ = () => !S.m.find && (S.q.id === 'mig' || (S.q.id === 'land' && S.m.id === 'acq') || (typeof PHQ === 'function' && PHQ()) || (typeof dlAnimOn === 'function' && dlAnimOn())
   || (typeof wxAnimOn === 'function' && wxAnimOn()) || (S.q.id === 'eff' && S.m.id === 'od' && typeof visYears === 'function' && !!visYears()));
 /* Play on the map, bottom left, for whatever animation is on screen; it presses the panel's own Play, so both stay in step */
@@ -4329,7 +4398,7 @@ function prioCount(p, lv, c){ const st = prioState(p); return st && st.st === 'd
 /* panel sections follow the order of the questions; each question opens its own sections (survey effort has none of its own) */
 const QSEC = {geo:['geo'], wx:['wx','dym'], snd:['snd'], vs:['vs'], tvul:['tvul'], fcond:['fcond','fhr','tfall'], cult:['cult'], rest:['rest'], veg:['veg'], rec:['live'], inv:['inat'], bird:['ebird'], mig:['ebird'], pri:['nrpz'], soil:['soil'], wet:['wet'], feat:['feat'], hist:['hist'], eff:['vis'], land:['lands'], phen:['phen'], pest:['phen']};
 /* which question each popup section and export table belongs to; its place in the list of questions orders them, its color colors them */
-const SECQ = {'Restoration targets':'rest', 'Invasive species':'inv', 'Priority invasives':'pinv', 'iNaturalist Records':'rec', 'Forest pests':'pest', 'Flowering':'phen',
+const SECQ = {'Restoration targets':'rest', 'Invasive species':'inv', 'Priority invasives':'pinv', 'iNaturalist Records':'rec', 'Forest pests':'pest', 'Flowering':'phen', 'Fireflies':'ffly',
   'Plants of cultural significance':'cult', 'Birds':'bird', 'Unique species':'pri', 'Vegetation':'veg', 'Geology':'geo', 'Soils':'soil', 'Wetlands':'wet',
   'Facilities and landscapes':'feat', 'Historic resources':'hist', 'Citizen science observers':'eff', 'Land administrators':'land', 'Weather and climate':'wx', 'Trail vulnerability':'tvul', 'Tree fall vulnerability':'fcond', 'Forest health risk':'fcond', 'Forest condition':'fcond', 'Climate change since 1980':'wx', 'Soundscape':'snd', 'Seen from the trail':'vs'};
 const qRank = id => { const i = Q.findIndex(q => q.id === id); return i < 0 ? 98 : i; };

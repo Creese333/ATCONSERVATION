@@ -9,7 +9,7 @@
    - Only the dashboard itself is the shell (saved as index.html). Any other page is saved under its own address; saving every
      page as index.html served a second page the dashboard and then overwrote the dashboard's copy with it (fixed in atgrid-v7).
    - The data lives on the A.T. Resource Grid site (DATA below) and is kept here exactly like this site's own files.
-   atc-v1: first version for this site. Looking up a saved copy no longer creates an empty offline store (atgrid-v7 did).
+   atc-v2: first version for this site. Looking up a saved copy no longer creates an empty offline store (atgrid-v7 did).
    atc-v2: a fresh start for every saved file, after phones kept an app.js from before the 3D button.
    atc-v3: the same, after the USGS hydrography and imagery-with-labels basemaps were removed.
    atc-v5: the same, after the lighter-drawing change was taken back out.
