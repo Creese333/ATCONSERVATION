@@ -460,11 +460,13 @@ details.gd .spp{margin:3px 0 8px;padding-left:12px}
 .striphead h2{font-size:16px;color:#fff;letter-spacing:.01em}
 #stripread{font-size:13px;color:#D0DAE5;min-height:1.45em;text-align:right;flex:1 1 300px}
 /* computers: the chart along the trail (with its elevation profile) folds down to its title bar; open on every visit */
-#stripmin{flex:none;align-self:center;width:30px;height:26px;display:grid;place-items:center;padding:0;cursor:pointer;
+#stripmin{flex:none;align-self:center;min-width:30px;height:26px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px;cursor:pointer;font:inherit;font-size:13px;
   background:none;border:1px solid rgba(255,255,255,.28);border-radius:6px;color:#D0DAE5}
 #stripmin svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
 @media (hover:hover){#stripmin:hover{border-color:rgba(255,255,255,.6);color:#fff}}
 #stripmin:focus-visible{outline:2px solid #9FD0FF;outline-offset:2px}
+#stripmin .sml{display:none}
+body.stripmin #stripmin .sml{display:inline}   /* folded: the label says what opens */
 body.stripmin #stripmin svg{transform:rotate(180deg)}
 body.stripmin #stripsvg,body.stripmin #stripread{display:none}
 body.stripmin #strip{padding-bottom:8px}
@@ -1151,7 +1153,7 @@ body.stackui #levels.lvdock button:not(.lvh){padding:5px 10px !important}
 </div>
 
 <section id="strip" aria-label="Trail profile, south to north">
-  <div class="striphead"><h2 id="striptitle"></h2><div id="stripread"></div><button id="stripmin" type="button" aria-expanded="true" aria-controls="stripsvg" title="Hide the chart"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg></button></div>
+  <div class="striphead"><h2 id="striptitle"></h2><div id="stripread"></div><button id="stripmin" type="button" aria-expanded="true" aria-controls="stripsvg" title="Hide the chart"><span class="sml">Elevation Profile</span><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg></button></div>
   <svg id="stripsvg" role="img" aria-label="Chart of the selected measure along the trail from Georgia to Maine"></svg>
 </section>
 
