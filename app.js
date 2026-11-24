@@ -3759,7 +3759,7 @@ document.addEventListener('keydown', e => { if (HOWK < 0) return; if (e.key === 
   addEventListener('resize', () => { const k = innerWidth + 'x' + innerHeight; if (k === howSz) return; howSz = k; if (HOWK >= 0) howDraw(); });
   /* once, on a first visit (not when a link opens a tour) */
   setTimeout(() => { let seen = 0; try { seen = store.get('howseen', 0); } catch (e) {} if (!seen && !/tour=/.test(location.hash) && !(typeof TOUR !== 'undefined' && TOUR.id)) howStart(); }, 2200); }
-const EXTHUCQ = new Set(['inv', 'pest', 'wx']);   /* questions that open on the HUC10 watershed cells */
+const EXTHUCQ = new Set(['inv', 'pest', 'wx', 'ffly']);   /* questions that open on the HUC10 watershed cells */
 function side(){ const lv = dispLevel(), el = $('#side'), q = S.q;
   segSync();
   if (S.lastQ !== q.id){ S.lastQ = q.id; if (EXTHUCQ.has(q.id)){ if (S.ext !== 'huc'){ S.extAuto = true; setTimeout(() => setExt('huc'), 0); } } else if (S.extAuto){ S.extAuto = false; if (S.ext === 'huc') setTimeout(() => setExt('corr'), 0); } } el.style.minHeight = S.keepH && S.keepH.q === q.id ? S.keepH.h + 'px' : '';
