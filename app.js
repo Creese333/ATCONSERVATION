@@ -5314,7 +5314,9 @@ lockMapHeight();
 let rz, rzW = VW(); window.addEventListener('resize', () => { lockMapHeight(); clearTimeout(rz); rz = setTimeout(() => { const wChanged = VW() !== rzW; rzW = VW(); if (wChanged || VW() > 860){ strip(); map.invalidateSize(); } }, 150); });
 
 /* ---------- about ---------- */
-$('#aboutbtn').onclick = () => $('#about').showModal();
+/* About this data always opens at the top: phones keep the last scroll position and scroll to the first link otherwise */
+$('#aboutbtn').onclick = () => { const d = $('#about'), dl = d.querySelector('.dlg'), h = d.querySelector('h2'); d.showModal();
+  h.tabIndex = -1; h.focus({preventScroll:true}); const top = () => { d.scrollTop = 0; if (dl) dl.scrollTop = 0; }; top(); requestAnimationFrame(top); setTimeout(top, 120); };
 /* citation: the accessed date is the reader's own date */
 $('#citedate').textContent = new Date().toLocaleDateString('en-US', {day:'numeric', month:'long', year:'numeric'});
 $('#citecopy').onclick = () => { const t = $('#citetext').textContent.replace(/\s+/g, ' ').trim(), say = x => { $('#citemsg').textContent = x; setTimeout(() => $('#citemsg').textContent = '', 2500); };
