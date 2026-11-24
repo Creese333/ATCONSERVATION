@@ -2089,10 +2089,10 @@ for (let i = Q.length - 1; i >= 0; i--) if (!D.themes[Q[i].th]) Q.splice(i, 1);
 { const p = Q.find(q => q.id === 'phen'); if (p){ const pm = id => p.m.find(m => m.id === id);
   Q.push(Object.assign({}, p, {id:'ffly', hue:HUE.ffly, title:'Where do fireflies light up the trail?',
     use:'Where fireflies have been recorded along the trail, from every iNaturalist firefly record in the trail’s project, updated weekly and named by the 2024 firefly species checklist. Pick all fireflies, the lightning bugs (the night flashers and glowers), the daytime fireflies that don’t light up as adults, or a single species. Records are research grade or still waiting for an ID, since many fireflies are only named to genus. Records, week by week plays the season, from winter fireflies in early spring to the summer flashers. Records follow observers, so towns and busy trailheads look richer, and a blank cell means none reported, not none there.',
-    m:[{id:'rec', label:'Records', hasTxt:() => 'have records', int:1, hollow0:1, none:'None recorded', noun:['record','records'],
+    m:[pm('wave'),   /* first, so the question opens on the season playing week by week */
+       {id:'rec', label:'Records', hasTxt:() => 'have records', int:1, hollow0:1, none:'None recorded', noun:['record','records'],
         fn:(lv, c) => { const A = phAgg(lv); return A ? A.any[c] : null; },
         note:'iNaturalist records of the fireflies picked, all years and seasons together.'},
-       pm('wave'),
        {id:'spp', noph:1, label:'Firefly species found', int:1, hollow0:1, none:'None recorded', noun:['species','species'], hasTxt:() => 'have a firefly species recorded',
         fn:(lv, c) => ffSpp(lv, c), note:'How many species on the firefly checklist have iNaturalist records in each cell. Records named only to genus are left out.'},
        pm('onset'), pm('peak'), pm('len')].filter(Boolean)})); } }
