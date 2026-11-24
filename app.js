@@ -3795,7 +3795,12 @@ function summary(lv){ SUMSEL = null; const m = S.m, L_ = D.levels[lv], n = L_.id
   for (let c = 0; c < n; c++){ if (!inSec(lv, c)) continue; total++; const v = m.get(lv, c); if (v != null) rows.push([c, v]); }
   const where = S.sec === 'all' ? '' : ' in ' + esc(secName());
   let h = `<p class="statline">${fmt(m.id === 'withinv' ? rows.filter(r => r[1] > 0).length : rows.length,0)} of ${fmt(total,0)} cells${where} ${m.hasTxt ? m.hasTxt() : m.yn ? 'have ' + esc(m.yn) : 'have data for this measure'}.</p>`;
-  if (!rows.length) return h + '<p class="statline">Nothing to show for this measure here. Try a larger cell size or another section.</p>';
+  if (!rows.length){
+    /* records loaded for the picked species, but none land in this extent's cells: say where they are instead */
+    if (PHQ()){ const st = PHD[phSp().key], A = phAgg(lv), k = st && st.st === 'done' ? st.n : 0;
+      if (k && A && !A.placed){ const rec = k === 1 ? 'The 1 record falls' : k === 2 ? 'Both records fall' : `All ${fmt(k, 0)} records fall`;
+        return h + `<p class="statline">${S.ext === 'huc' ? `${rec} outside the watershed cells, so none are mapped.` : `${rec} in the surrounding watersheds, outside the A.T. corridor cells. Switch Extent to HUC10 watershed to see ${k === 1 ? 'it' : 'them'}.`}</p>`; } }
+    return h + '<p class="statline">Nothing to show for this measure here. Try a larger cell size or another section.</p>'; }
   if (m.sumFn) return h + m.sumFn(lv, rows, where);
   h += selAllBtn(lv, rows.filter(r => m.kind === 'cat' || m.yn || r[1] !== 0).map(r => r[0]), m.yn || m.label);   /* zero counts (none reported) are not selected */
   if (m.yn){ rows.sort((a,b) => L_.mi[a[0]] - L_.mi[b[0]]);
