@@ -813,7 +813,9 @@ function phSectionCore(lv, c){ const sp = phSp(), A = phAgg(lv), k = sp.kind;
     soilRow(many ? 'First recorded in these cells' : 'First recorded here', String(FIRST)) + (A.eany && cs.some(x => A.eany[x]) ? soilRow('EDDMapS reports', fmt(cs.reduce((t, x) => t + A.eany[x], 0), 0)) : '') + '</div>';
   const note = k === 'plant' ? 'Research-grade iNaturalist records with a flower buds or flowers annotation. Dates pool every year: first is the earliest 10% of flowering records, peak the middle, and the season runs to the latest 10%. Records follow hikers, so they show when people saw it, not how much there is.'
     : k === 'adult' ? 'Research-grade iNaturalist records; adults are those annotated with that life stage, and the dates use them. Records follow observers, so they show when and where it was noticed.'
-    : 'Research-grade iNaturalist records of the nematode that causes beech leaf disease, usually photos of the leaf symptoms. Records follow observers, so the first year marks when it was noticed here.';
+    : sp.set === 'ffly' ? 'iNaturalist records of the fireflies picked, research grade or still waiting for an ID, since many fireflies are only named to genus. Records follow observers, so they show when and where fireflies were noticed.'
+    : /Litylenchus/.test(sp.sci || '') ? 'Research-grade iNaturalist records of the nematode that causes beech leaf disease, usually photos of the leaf symptoms. Records follow observers, so the first year marks when it was noticed here.'
+    : 'Research-grade iNaturalist records. Records follow observers, so the first year marks when it was noticed here.';
   return b + `<p class="none" style="font-size:13.5px;margin-top:8px">${many ? 'Combined from the selected cells: weekly records are added, and the dates pool all their records. ' : ''}${note}</p></div>`; }
 /* the Results list for these measures: ranked the way each one reads (earliest dates first, longest seasons, most records that week) */
 function phSum(lv, rows, where){ const m = S.m, n0 = rows.length, A = phAgg(lv), sp = phSp(); let h = '';
