@@ -1,0 +1,5054 @@
+{
+ "version": "0.2.0",
+ "name": "ACT Field – Appalachian Trail data collection",
+ "mapView": {
+  "center": [
+   -77.7286,
+   39.3254
+  ],
+  "zoom": 11,
+  "bearing": 0,
+  "pitch": 0
+ },
+ "basemapStyleUrl": "https://tiles.openfreemap.org/styles/liberty",
+ "basemapVisible": true,
+ "basemapOpacity": 1,
+ "layers": [
+  {
+   "id": "c-invasive",
+   "name": "Invasive plant observations",
+   "type": "geojson",
+   "source": {
+    "type": "geojson"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "fillColor": "#C0392B",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 2,
+    "circleRadius": 7,
+    "fillOpacity": 1,
+    "vectorStyleMode": "single"
+   },
+   "groupId": "g-collect",
+   "geojson": {
+    "type": "FeatureCollection",
+    "features": []
+   },
+   "metadata": {
+    "fieldCollection": true,
+    "collectionGeometry": "point",
+    "collectionSchema": {
+     "fields": [
+      {
+       "key": "obs_id",
+       "label": "Record ID",
+       "type": "text"
+      },
+      {
+       "key": "obs_date",
+       "label": "Date and time",
+       "type": "date",
+       "required": true
+      },
+      {
+       "key": "observer",
+       "label": "Observer",
+       "type": "text",
+       "required": true
+      },
+      {
+       "key": "state",
+       "label": "State",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "GA",
+        "NC",
+        "TN",
+        "VA",
+        "WV",
+        "MD",
+        "PA",
+        "NJ",
+        "NY",
+        "CT",
+        "MA",
+        "VT",
+        "NH",
+        "ME"
+       ]
+      },
+      {
+       "key": "club_section",
+       "label": "Club section",
+       "type": "text"
+      },
+      {
+       "key": "species",
+       "label": "Species",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "Ailanthus altissima (tree-of-heaven)",
+        "Alliaria petiolata (garlic mustard)",
+        "Berberis thunbergii (Japanese barberry)",
+        "Celastrus orbiculatus (Oriental bittersweet)",
+        "Elaeagnus umbellata (autumn olive)",
+        "Euonymus alatus (burning bush)",
+        "Ficaria verna (lesser celandine)",
+        "Heracleum mantegazzianum (giant hogweed)",
+        "Lonicera japonica (Japanese honeysuckle)",
+        "Lonicera spp. (bush honeysuckles)",
+        "Lythrum salicaria (purple loosestrife)",
+        "Microstegium vimineum (Japanese stiltgrass)",
+        "Miscanthus sinensis (Chinese silvergrass)",
+        "Oplismenus undulatifolius (wavyleaf basketgrass)",
+        "Pastinaca sativa (wild parsnip)",
+        "Paulownia tomentosa (princess tree)",
+        "Persicaria perfoliata (mile-a-minute)",
+        "Phragmites australis (common reed)",
+        "Pueraria montana (kudzu)",
+        "Pyrus calleryana (Callery pear)",
+        "Reynoutria japonica (Japanese knotweed)",
+        "Rhamnus cathartica / Frangula alnus (buckthorns)",
+        "Rosa multiflora (multiflora rose)",
+        "Rubus phoenicolasius (wineberry)",
+        "Spiraea japonica (Japanese spiraea)",
+        "Vincetoxicum spp. (swallow-worts)",
+        "Ampelopsis glandulosa (porcelain berry)",
+        "Acer platanoides (Norway maple)",
+        "Ligustrum spp. (privets)",
+        "Centaurea stoebe (spotted knapweed)",
+        "Other (see notes)"
+       ]
+      },
+      {
+       "key": "species_other",
+       "label": "Other species",
+       "type": "text"
+      },
+      {
+       "key": "cover_class",
+       "label": "Cover class",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "Trace",
+        "1-5",
+        "5-25",
+        "25-50",
+        "50-75",
+        "75-100"
+       ]
+      },
+      {
+       "key": "patch_area_m2",
+       "label": "Estimated patch area (m²)",
+       "type": "number"
+      },
+      {
+       "key": "distribution",
+       "label": "Distribution",
+       "type": "choice",
+       "options": [
+        "Single plant",
+        "Scattered",
+        "Patch",
+        "Linear along trail",
+        "Dense monoculture"
+       ]
+      },
+      {
+       "key": "phenology",
+       "label": "Phenology",
+       "type": "choice",
+       "options": [
+        "Vegetative",
+        "Flowering",
+        "Fruiting/seed",
+        "Dormant"
+       ]
+      },
+      {
+       "key": "dist_from_trail",
+       "label": "Distance from treadway",
+       "type": "choice",
+       "options": [
+        "On treadway",
+        "0-5 m",
+        "5-25 m",
+        "25-100 m",
+        ">100 m"
+       ]
+      },
+      {
+       "key": "treatment",
+       "label": "Treatment recommended",
+       "type": "choice",
+       "options": [
+        "None",
+        "Hand pull",
+        "Cut",
+        "Foliar herbicide",
+        "Cut stump / basal bark",
+        "Monitor only",
+        "EDRR priority"
+       ]
+      },
+      {
+       "key": "notes",
+       "label": "Notes",
+       "type": "text"
+      },
+      {
+       "key": "gps_accuracy_m",
+       "label": "GPS accuracy (m)",
+       "type": "number"
+      },
+      {
+       "key": "placed_by",
+       "label": "Location source",
+       "type": "text"
+      }
+     ]
+    }
+   },
+   "attributeForm": {
+    "fields": [
+     {
+      "field": "obs_id",
+      "alias": "Record ID",
+      "widget": "text",
+      "defaultValue": "uuid('WithoutBraces')"
+     },
+     {
+      "field": "obs_date",
+      "alias": "Date and time",
+      "widget": "date",
+      "required": true,
+      "defaultValue": "now()"
+     },
+     {
+      "field": "observer",
+      "alias": "Observer",
+      "widget": "text",
+      "required": true,
+      "defaultValue": "if(@user_full_name = 'local-user', NULL, @user_full_name)"
+     },
+     {
+      "field": "state",
+      "alias": "State",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "GA"
+       },
+       {
+        "value": "NC"
+       },
+       {
+        "value": "TN"
+       },
+       {
+        "value": "VA"
+       },
+       {
+        "value": "WV"
+       },
+       {
+        "value": "MD"
+       },
+       {
+        "value": "PA"
+       },
+       {
+        "value": "NJ"
+       },
+       {
+        "value": "NY"
+       },
+       {
+        "value": "CT"
+       },
+       {
+        "value": "MA"
+       },
+       {
+        "value": "VT"
+       },
+       {
+        "value": "NH"
+       },
+       {
+        "value": "ME"
+       }
+      ]
+     },
+     {
+      "field": "club_section",
+      "alias": "Club section",
+      "widget": "text"
+     },
+     {
+      "field": "species",
+      "alias": "Species",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "Ailanthus altissima (tree-of-heaven)"
+       },
+       {
+        "value": "Alliaria petiolata (garlic mustard)"
+       },
+       {
+        "value": "Berberis thunbergii (Japanese barberry)"
+       },
+       {
+        "value": "Celastrus orbiculatus (Oriental bittersweet)"
+       },
+       {
+        "value": "Elaeagnus umbellata (autumn olive)"
+       },
+       {
+        "value": "Euonymus alatus (burning bush)"
+       },
+       {
+        "value": "Ficaria verna (lesser celandine)"
+       },
+       {
+        "value": "Heracleum mantegazzianum (giant hogweed)"
+       },
+       {
+        "value": "Lonicera japonica (Japanese honeysuckle)"
+       },
+       {
+        "value": "Lonicera spp. (bush honeysuckles)"
+       },
+       {
+        "value": "Lythrum salicaria (purple loosestrife)"
+       },
+       {
+        "value": "Microstegium vimineum (Japanese stiltgrass)"
+       },
+       {
+        "value": "Miscanthus sinensis (Chinese silvergrass)"
+       },
+       {
+        "value": "Oplismenus undulatifolius (wavyleaf basketgrass)"
+       },
+       {
+        "value": "Pastinaca sativa (wild parsnip)"
+       },
+       {
+        "value": "Paulownia tomentosa (princess tree)"
+       },
+       {
+        "value": "Persicaria perfoliata (mile-a-minute)"
+       },
+       {
+        "value": "Phragmites australis (common reed)"
+       },
+       {
+        "value": "Pueraria montana (kudzu)"
+       },
+       {
+        "value": "Pyrus calleryana (Callery pear)"
+       },
+       {
+        "value": "Reynoutria japonica (Japanese knotweed)"
+       },
+       {
+        "value": "Rhamnus cathartica / Frangula alnus (buckthorns)"
+       },
+       {
+        "value": "Rosa multiflora (multiflora rose)"
+       },
+       {
+        "value": "Rubus phoenicolasius (wineberry)"
+       },
+       {
+        "value": "Spiraea japonica (Japanese spiraea)"
+       },
+       {
+        "value": "Vincetoxicum spp. (swallow-worts)"
+       },
+       {
+        "value": "Ampelopsis glandulosa (porcelain berry)"
+       },
+       {
+        "value": "Acer platanoides (Norway maple)"
+       },
+       {
+        "value": "Ligustrum spp. (privets)"
+       },
+       {
+        "value": "Centaurea stoebe (spotted knapweed)"
+       },
+       {
+        "value": "Other (see notes)"
+       }
+      ]
+     },
+     {
+      "field": "species_other",
+      "alias": "Other species",
+      "widget": "text",
+      "visibilityExpression": "[\"==\", [\"get\", \"species\"], \"Other (see notes)\"]"
+     },
+     {
+      "field": "cover_class",
+      "alias": "Cover class",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "Trace",
+        "label": "Trace (<1%)"
+       },
+       {
+        "value": "1-5",
+        "label": "1–5%"
+       },
+       {
+        "value": "5-25",
+        "label": "5–25%"
+       },
+       {
+        "value": "25-50",
+        "label": "25–50%"
+       },
+       {
+        "value": "50-75",
+        "label": "50–75%"
+       },
+       {
+        "value": "75-100",
+        "label": "75–100%"
+       }
+      ]
+     },
+     {
+      "field": "patch_area_m2",
+      "alias": "Estimated patch area (m²)",
+      "widget": "number",
+      "min": 0
+     },
+     {
+      "field": "distribution",
+      "alias": "Distribution",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Single plant"
+       },
+       {
+        "value": "Scattered"
+       },
+       {
+        "value": "Patch"
+       },
+       {
+        "value": "Linear along trail"
+       },
+       {
+        "value": "Dense monoculture"
+       }
+      ]
+     },
+     {
+      "field": "phenology",
+      "alias": "Phenology",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Vegetative"
+       },
+       {
+        "value": "Flowering"
+       },
+       {
+        "value": "Fruiting/seed"
+       },
+       {
+        "value": "Dormant"
+       }
+      ]
+     },
+     {
+      "field": "dist_from_trail",
+      "alias": "Distance from treadway",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "On treadway"
+       },
+       {
+        "value": "0-5 m"
+       },
+       {
+        "value": "5-25 m"
+       },
+       {
+        "value": "25-100 m"
+       },
+       {
+        "value": ">100 m"
+       }
+      ]
+     },
+     {
+      "field": "treatment",
+      "alias": "Treatment recommended",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "None"
+       },
+       {
+        "value": "Hand pull"
+       },
+       {
+        "value": "Cut"
+       },
+       {
+        "value": "Foliar herbicide"
+       },
+       {
+        "value": "Cut stump / basal bark"
+       },
+       {
+        "value": "Monitor only"
+       },
+       {
+        "value": "EDRR priority"
+       }
+      ]
+     },
+     {
+      "field": "notes",
+      "alias": "Notes",
+      "widget": "text"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "alias": "GPS accuracy (m)",
+      "widget": "number",
+      "defaultValue": "round(@position_horizontal_accuracy, 1)",
+      "min": 0
+     },
+     {
+      "field": "placed_by",
+      "alias": "Location source",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "GPS",
+        "label": "GPS fix"
+       },
+       {
+        "value": "Map",
+        "label": "Placed on map"
+       }
+      ],
+      "defaultValue": "if(@position_coordinate is not null, 'GPS', 'Map')"
+     }
+    ],
+    "sections": [
+     {
+      "title": "Observation",
+      "fields": [
+       "obs_date",
+       "observer",
+       "state",
+       "club_section"
+      ]
+     },
+     {
+      "title": "Infestation",
+      "fields": [
+       "species",
+       "species_other",
+       "cover_class",
+       "patch_area_m2",
+       "distribution",
+       "phenology",
+       "dist_from_trail",
+       "treatment"
+      ]
+     },
+     {
+      "title": "Notes",
+      "fields": [
+       "notes"
+      ]
+     },
+     {
+      "title": "Record",
+      "fields": [
+       "obs_id",
+       "gps_accuracy_m",
+       "placed_by"
+      ]
+     }
+    ]
+   },
+   "editorTracking": {
+    "enabled": true,
+    "createdByField": "created_by",
+    "createdAtField": "created_at",
+    "editedByField": "edited_by",
+    "editedAtField": "edited_at"
+   },
+   "popup": {
+    "click": true,
+    "titleField": "species",
+    "fields": [
+     {
+      "field": "obs_date",
+      "label": "Date and time"
+     },
+     {
+      "field": "observer",
+      "label": "Observer"
+     },
+     {
+      "field": "state",
+      "label": "State"
+     },
+     {
+      "field": "club_section",
+      "label": "Club section"
+     },
+     {
+      "field": "species",
+      "label": "Species"
+     },
+     {
+      "field": "species_other",
+      "label": "Other species"
+     },
+     {
+      "field": "cover_class",
+      "label": "Cover class"
+     },
+     {
+      "field": "patch_area_m2",
+      "label": "Estimated patch area (m²)"
+     },
+     {
+      "field": "distribution",
+      "label": "Distribution"
+     },
+     {
+      "field": "phenology",
+      "label": "Phenology"
+     },
+     {
+      "field": "dist_from_trail",
+      "label": "Distance from treadway"
+     },
+     {
+      "field": "treatment",
+      "label": "Treatment recommended"
+     },
+     {
+      "field": "notes",
+      "label": "Notes"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "label": "GPS accuracy (m)"
+     },
+     {
+      "field": "photo",
+      "label": "Photo",
+      "kind": "image"
+     }
+    ],
+    "maxWidth": 420,
+    "imageHeight": 220
+   },
+   "descriptiveMetadata": {
+    "title": "Invasive plant observations",
+    "abstract": "Field observations collected along the Appalachian National Scenic Trail (Invasive plant observations).",
+    "keywords": [
+     "Appalachian Trail",
+     "APPA",
+     "field collection"
+    ],
+    "contact": {
+     "organization": "National Park Service, Appalachian Trail Park Office"
+    }
+   }
+  },
+  {
+   "id": "c-pest",
+   "name": "Forest pest and disease",
+   "type": "geojson",
+   "source": {
+    "type": "geojson"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "fillColor": "#7D3C98",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 2,
+    "circleRadius": 7,
+    "fillOpacity": 1
+   },
+   "groupId": "g-collect",
+   "geojson": {
+    "type": "FeatureCollection",
+    "features": []
+   },
+   "metadata": {
+    "fieldCollection": true,
+    "collectionGeometry": "point",
+    "collectionSchema": {
+     "fields": [
+      {
+       "key": "obs_id",
+       "label": "Record ID",
+       "type": "text"
+      },
+      {
+       "key": "obs_date",
+       "label": "Date and time",
+       "type": "date",
+       "required": true
+      },
+      {
+       "key": "observer",
+       "label": "Observer",
+       "type": "text",
+       "required": true
+      },
+      {
+       "key": "state",
+       "label": "State",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "GA",
+        "NC",
+        "TN",
+        "VA",
+        "WV",
+        "MD",
+        "PA",
+        "NJ",
+        "NY",
+        "CT",
+        "MA",
+        "VT",
+        "NH",
+        "ME"
+       ]
+      },
+      {
+       "key": "club_section",
+       "label": "Club section",
+       "type": "text"
+      },
+      {
+       "key": "agent",
+       "label": "Pest or disease",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "Hemlock woolly adelgid",
+        "Elongate hemlock scale",
+        "Spotted lanternfly",
+        "Emerald ash borer",
+        "Beech leaf disease",
+        "Beech bark disease",
+        "Spongy moth",
+        "Southern pine beetle",
+        "Oak wilt",
+        "Butternut canker",
+        "Dogwood anthracnose",
+        "Other (see notes)"
+       ]
+      },
+      {
+       "key": "host",
+       "label": "Host tree",
+       "type": "text"
+      },
+      {
+       "key": "life_stage",
+       "label": "Life stage or sign seen",
+       "type": "choice",
+       "options": [
+        "Eggs/egg mass",
+        "Nymph/larva",
+        "Adult",
+        "Wool/ovisacs",
+        "Exit holes",
+        "Galleries",
+        "Leaf symptoms",
+        "Cankers",
+        "Dieback only"
+       ]
+      },
+      {
+       "key": "trees_affected",
+       "label": "Trees affected (count)",
+       "type": "number"
+      },
+      {
+       "key": "crown_condition",
+       "label": "Crown condition",
+       "type": "choice",
+       "options": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+       ]
+      },
+      {
+       "key": "severity",
+       "label": "Infestation severity",
+       "type": "choice",
+       "options": [
+        "Light",
+        "Moderate",
+        "Heavy"
+       ]
+      },
+      {
+       "key": "treated_before",
+       "label": "Previously treated",
+       "type": "choice",
+       "options": [
+        "Yes",
+        "No",
+        "Unknown"
+       ]
+      },
+      {
+       "key": "biocontrol_site",
+       "label": "Candidate biocontrol release site",
+       "type": "text"
+      },
+      {
+       "key": "notes",
+       "label": "Notes",
+       "type": "text"
+      },
+      {
+       "key": "gps_accuracy_m",
+       "label": "GPS accuracy (m)",
+       "type": "number"
+      },
+      {
+       "key": "placed_by",
+       "label": "Location source",
+       "type": "text"
+      }
+     ]
+    }
+   },
+   "attributeForm": {
+    "fields": [
+     {
+      "field": "obs_id",
+      "alias": "Record ID",
+      "widget": "text",
+      "defaultValue": "uuid('WithoutBraces')"
+     },
+     {
+      "field": "obs_date",
+      "alias": "Date and time",
+      "widget": "date",
+      "required": true,
+      "defaultValue": "now()"
+     },
+     {
+      "field": "observer",
+      "alias": "Observer",
+      "widget": "text",
+      "required": true,
+      "defaultValue": "if(@user_full_name = 'local-user', NULL, @user_full_name)"
+     },
+     {
+      "field": "state",
+      "alias": "State",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "GA"
+       },
+       {
+        "value": "NC"
+       },
+       {
+        "value": "TN"
+       },
+       {
+        "value": "VA"
+       },
+       {
+        "value": "WV"
+       },
+       {
+        "value": "MD"
+       },
+       {
+        "value": "PA"
+       },
+       {
+        "value": "NJ"
+       },
+       {
+        "value": "NY"
+       },
+       {
+        "value": "CT"
+       },
+       {
+        "value": "MA"
+       },
+       {
+        "value": "VT"
+       },
+       {
+        "value": "NH"
+       },
+       {
+        "value": "ME"
+       }
+      ]
+     },
+     {
+      "field": "club_section",
+      "alias": "Club section",
+      "widget": "text"
+     },
+     {
+      "field": "agent",
+      "alias": "Pest or disease",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "Hemlock woolly adelgid"
+       },
+       {
+        "value": "Elongate hemlock scale"
+       },
+       {
+        "value": "Spotted lanternfly"
+       },
+       {
+        "value": "Emerald ash borer"
+       },
+       {
+        "value": "Beech leaf disease"
+       },
+       {
+        "value": "Beech bark disease"
+       },
+       {
+        "value": "Spongy moth"
+       },
+       {
+        "value": "Southern pine beetle"
+       },
+       {
+        "value": "Oak wilt"
+       },
+       {
+        "value": "Butternut canker"
+       },
+       {
+        "value": "Dogwood anthracnose"
+       },
+       {
+        "value": "Other (see notes)"
+       }
+      ]
+     },
+     {
+      "field": "host",
+      "alias": "Host tree",
+      "widget": "text"
+     },
+     {
+      "field": "life_stage",
+      "alias": "Life stage or sign seen",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Eggs/egg mass"
+       },
+       {
+        "value": "Nymph/larva"
+       },
+       {
+        "value": "Adult"
+       },
+       {
+        "value": "Wool/ovisacs"
+       },
+       {
+        "value": "Exit holes"
+       },
+       {
+        "value": "Galleries"
+       },
+       {
+        "value": "Leaf symptoms"
+       },
+       {
+        "value": "Cankers"
+       },
+       {
+        "value": "Dieback only"
+       }
+      ]
+     },
+     {
+      "field": "trees_affected",
+      "alias": "Trees affected (count)",
+      "widget": "number",
+      "min": 0
+     },
+     {
+      "field": "crown_condition",
+      "alias": "Crown condition",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "1",
+        "label": "1 – Healthy"
+       },
+       {
+        "value": "2",
+        "label": "2 – Thinning <25%"
+       },
+       {
+        "value": "3",
+        "label": "3 – Thinning 25–50%"
+       },
+       {
+        "value": "4",
+        "label": "4 – Thinning >50%"
+       },
+       {
+        "value": "5",
+        "label": "5 – Dead"
+       }
+      ]
+     },
+     {
+      "field": "severity",
+      "alias": "Infestation severity",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Light"
+       },
+       {
+        "value": "Moderate"
+       },
+       {
+        "value": "Heavy"
+       }
+      ]
+     },
+     {
+      "field": "treated_before",
+      "alias": "Previously treated",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Yes"
+       },
+       {
+        "value": "No"
+       },
+       {
+        "value": "Unknown"
+       }
+      ]
+     },
+     {
+      "field": "biocontrol_site",
+      "alias": "Candidate biocontrol release site",
+      "widget": "checkbox"
+     },
+     {
+      "field": "notes",
+      "alias": "Notes",
+      "widget": "text"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "alias": "GPS accuracy (m)",
+      "widget": "number",
+      "defaultValue": "round(@position_horizontal_accuracy, 1)",
+      "min": 0
+     },
+     {
+      "field": "placed_by",
+      "alias": "Location source",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "GPS",
+        "label": "GPS fix"
+       },
+       {
+        "value": "Map",
+        "label": "Placed on map"
+       }
+      ],
+      "defaultValue": "if(@position_coordinate is not null, 'GPS', 'Map')"
+     }
+    ],
+    "sections": [
+     {
+      "title": "Observation",
+      "fields": [
+       "obs_date",
+       "observer",
+       "state",
+       "club_section"
+      ]
+     },
+     {
+      "title": "Pest and host",
+      "fields": [
+       "agent",
+       "host",
+       "life_stage",
+       "trees_affected",
+       "crown_condition",
+       "severity",
+       "treated_before",
+       "biocontrol_site"
+      ]
+     },
+     {
+      "title": "Notes",
+      "fields": [
+       "notes"
+      ]
+     },
+     {
+      "title": "Record",
+      "fields": [
+       "obs_id",
+       "gps_accuracy_m",
+       "placed_by"
+      ]
+     }
+    ]
+   },
+   "editorTracking": {
+    "enabled": true,
+    "createdByField": "created_by",
+    "createdAtField": "created_at",
+    "editedByField": "edited_by",
+    "editedAtField": "edited_at"
+   },
+   "popup": {
+    "click": true,
+    "titleField": "agent",
+    "fields": [
+     {
+      "field": "obs_date",
+      "label": "Date and time"
+     },
+     {
+      "field": "observer",
+      "label": "Observer"
+     },
+     {
+      "field": "state",
+      "label": "State"
+     },
+     {
+      "field": "club_section",
+      "label": "Club section"
+     },
+     {
+      "field": "agent",
+      "label": "Pest or disease"
+     },
+     {
+      "field": "host",
+      "label": "Host tree"
+     },
+     {
+      "field": "life_stage",
+      "label": "Life stage or sign seen"
+     },
+     {
+      "field": "trees_affected",
+      "label": "Trees affected (count)"
+     },
+     {
+      "field": "crown_condition",
+      "label": "Crown condition"
+     },
+     {
+      "field": "severity",
+      "label": "Infestation severity"
+     },
+     {
+      "field": "treated_before",
+      "label": "Previously treated"
+     },
+     {
+      "field": "biocontrol_site",
+      "label": "Candidate biocontrol release site"
+     },
+     {
+      "field": "notes",
+      "label": "Notes"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "label": "GPS accuracy (m)"
+     },
+     {
+      "field": "photo",
+      "label": "Photo",
+      "kind": "image"
+     }
+    ],
+    "maxWidth": 420,
+    "imageHeight": 220
+   },
+   "descriptiveMetadata": {
+    "title": "Forest pest and disease",
+    "abstract": "Field observations collected along the Appalachian National Scenic Trail (Forest pest and disease).",
+    "keywords": [
+     "Appalachian Trail",
+     "APPA",
+     "field collection"
+    ],
+    "contact": {
+     "organization": "National Park Service, Appalachian Trail Park Office"
+    }
+   }
+  },
+  {
+   "id": "c-hazard",
+   "name": "Hazard trees",
+   "type": "geojson",
+   "source": {
+    "type": "geojson"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "fillColor": "#E67E22",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 2,
+    "circleRadius": 7,
+    "fillOpacity": 1,
+    "vectorStyleMode": "categorized",
+    "vectorStyleProperty": "risk_rating",
+    "vectorStyleStops": [
+     {
+      "value": "Low",
+      "color": "#2E8B57",
+      "label": "Low"
+     },
+     {
+      "value": "Moderate",
+      "color": "#E3B505",
+      "label": "Moderate"
+     },
+     {
+      "value": "High",
+      "color": "#E67E22",
+      "label": "High"
+     },
+     {
+      "value": "Extreme",
+      "color": "#B03A2E",
+      "label": "Extreme"
+     }
+    ]
+   },
+   "groupId": "g-collect",
+   "geojson": {
+    "type": "FeatureCollection",
+    "features": []
+   },
+   "metadata": {
+    "fieldCollection": true,
+    "collectionGeometry": "point",
+    "collectionSchema": {
+     "fields": [
+      {
+       "key": "obs_id",
+       "label": "Record ID",
+       "type": "text"
+      },
+      {
+       "key": "obs_date",
+       "label": "Date and time",
+       "type": "date",
+       "required": true
+      },
+      {
+       "key": "observer",
+       "label": "Observer",
+       "type": "text",
+       "required": true
+      },
+      {
+       "key": "state",
+       "label": "State",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "GA",
+        "NC",
+        "TN",
+        "VA",
+        "WV",
+        "MD",
+        "PA",
+        "NJ",
+        "NY",
+        "CT",
+        "MA",
+        "VT",
+        "NH",
+        "ME"
+       ]
+      },
+      {
+       "key": "club_section",
+       "label": "Club section",
+       "type": "text"
+      },
+      {
+       "key": "tree_species",
+       "label": "Tree species",
+       "type": "text",
+       "required": true
+      },
+      {
+       "key": "dbh_in",
+       "label": "DBH (in)",
+       "type": "number"
+      },
+      {
+       "key": "status",
+       "label": "Tree status",
+       "type": "choice",
+       "options": [
+        "Live",
+        "Declining",
+        "Dead (snag)",
+        "Down/hung"
+       ]
+      },
+      {
+       "key": "defects",
+       "label": "Defects",
+       "type": "text"
+      },
+      {
+       "key": "target",
+       "label": "Target",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "Shelter",
+        "Privy",
+        "Campsite/tent pad",
+        "Treadway",
+        "Parking area",
+        "Road",
+        "Bridge/structure",
+        "Other"
+       ]
+      },
+      {
+       "key": "lof",
+       "label": "Likelihood of failure",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+       ]
+      },
+      {
+       "key": "loi",
+       "label": "Likelihood of impacting target",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+       ]
+      },
+      {
+       "key": "consequence",
+       "label": "Consequences of failure",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+       ]
+      },
+      {
+       "key": "risk_rating",
+       "label": "Risk rating",
+       "type": "choice",
+       "options": [
+        "Low",
+        "Moderate",
+        "High",
+        "Extreme"
+       ]
+      },
+      {
+       "key": "bat_roost",
+       "label": "Potential bat roost (loose bark, cavities, cracks)",
+       "type": "choice",
+       "options": [
+        "Yes",
+        "No",
+        "Unsure"
+       ]
+      },
+      {
+       "key": "action",
+       "label": "Recommended action",
+       "type": "choice",
+       "options": [
+        "No action",
+        "Monitor",
+        "Prune",
+        "Fell",
+        "Relocate target",
+        "Close area",
+        "Refer to arborist"
+       ]
+      },
+      {
+       "key": "priority",
+       "label": "Priority",
+       "type": "choice",
+       "options": [
+        "Immediate",
+        "Within 30 days",
+        "This season",
+        "Routine"
+       ]
+      },
+      {
+       "key": "notes",
+       "label": "Notes",
+       "type": "text"
+      },
+      {
+       "key": "gps_accuracy_m",
+       "label": "GPS accuracy (m)",
+       "type": "number"
+      },
+      {
+       "key": "placed_by",
+       "label": "Location source",
+       "type": "text"
+      }
+     ]
+    }
+   },
+   "attributeForm": {
+    "fields": [
+     {
+      "field": "obs_id",
+      "alias": "Record ID",
+      "widget": "text",
+      "defaultValue": "uuid('WithoutBraces')"
+     },
+     {
+      "field": "obs_date",
+      "alias": "Date and time",
+      "widget": "date",
+      "required": true,
+      "defaultValue": "now()"
+     },
+     {
+      "field": "observer",
+      "alias": "Observer",
+      "widget": "text",
+      "required": true,
+      "defaultValue": "if(@user_full_name = 'local-user', NULL, @user_full_name)"
+     },
+     {
+      "field": "state",
+      "alias": "State",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "GA"
+       },
+       {
+        "value": "NC"
+       },
+       {
+        "value": "TN"
+       },
+       {
+        "value": "VA"
+       },
+       {
+        "value": "WV"
+       },
+       {
+        "value": "MD"
+       },
+       {
+        "value": "PA"
+       },
+       {
+        "value": "NJ"
+       },
+       {
+        "value": "NY"
+       },
+       {
+        "value": "CT"
+       },
+       {
+        "value": "MA"
+       },
+       {
+        "value": "VT"
+       },
+       {
+        "value": "NH"
+       },
+       {
+        "value": "ME"
+       }
+      ]
+     },
+     {
+      "field": "club_section",
+      "alias": "Club section",
+      "widget": "text"
+     },
+     {
+      "field": "tree_species",
+      "alias": "Tree species",
+      "widget": "text",
+      "required": true
+     },
+     {
+      "field": "dbh_in",
+      "alias": "DBH (in)",
+      "widget": "number",
+      "min": 0,
+      "max": 120
+     },
+     {
+      "field": "status",
+      "alias": "Tree status",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Live"
+       },
+       {
+        "value": "Declining"
+       },
+       {
+        "value": "Dead (snag)"
+       },
+       {
+        "value": "Down/hung"
+       }
+      ]
+     },
+     {
+      "field": "defects",
+      "alias": "Defects",
+      "widget": "text"
+     },
+     {
+      "field": "target",
+      "alias": "Target",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "Shelter"
+       },
+       {
+        "value": "Privy"
+       },
+       {
+        "value": "Campsite/tent pad"
+       },
+       {
+        "value": "Treadway"
+       },
+       {
+        "value": "Parking area"
+       },
+       {
+        "value": "Road"
+       },
+       {
+        "value": "Bridge/structure"
+       },
+       {
+        "value": "Other"
+       }
+      ]
+     },
+     {
+      "field": "lof",
+      "alias": "Likelihood of failure",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "1",
+        "label": "Improbable"
+       },
+       {
+        "value": "2",
+        "label": "Possible"
+       },
+       {
+        "value": "3",
+        "label": "Probable"
+       },
+       {
+        "value": "4",
+        "label": "Imminent"
+       }
+      ]
+     },
+     {
+      "field": "loi",
+      "alias": "Likelihood of impacting target",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "1",
+        "label": "Very low"
+       },
+       {
+        "value": "2",
+        "label": "Low"
+       },
+       {
+        "value": "3",
+        "label": "Medium"
+       },
+       {
+        "value": "4",
+        "label": "High"
+       }
+      ]
+     },
+     {
+      "field": "consequence",
+      "alias": "Consequences of failure",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "1",
+        "label": "Negligible"
+       },
+       {
+        "value": "2",
+        "label": "Minor"
+       },
+       {
+        "value": "3",
+        "label": "Significant"
+       },
+       {
+        "value": "4",
+        "label": "Severe"
+       }
+      ]
+     },
+     {
+      "field": "risk_rating",
+      "alias": "Risk rating",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Low"
+       },
+       {
+        "value": "Moderate"
+       },
+       {
+        "value": "High"
+       },
+       {
+        "value": "Extreme"
+       }
+      ],
+      "defaultValue": "CASE WHEN \"lof\" IS NULL OR \"loi\" IS NULL OR \"consequence\" IS NULL THEN NULL WHEN \"lof\" = '4' AND \"loi\" = '4' AND \"consequence\" = '4' THEN 'Extreme' WHEN ((\"lof\" = '4' AND \"loi\" IN ('3', '4')) OR (\"lof\" = '3' AND \"loi\" = '4')) AND \"consequence\" IN ('3', '4') THEN 'High' WHEN ((\"lof\" = '4' AND \"loi\" IN ('3', '4')) OR (\"lof\" = '3' AND \"loi\" = '4')) AND \"consequence\" = '2' THEN 'Moderate' WHEN ((\"lof\" = '4' AND \"loi\" = '2') OR (\"lof\" = '3' AND \"loi\" = '3') OR (\"lof\" = '2' AND \"loi\" = '4')) AND \"consequence\" IN ('3', '4') THEN 'Moderate' ELSE 'Low' END"
+     },
+     {
+      "field": "bat_roost",
+      "alias": "Potential bat roost (loose bark, cavities, cracks)",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Yes"
+       },
+       {
+        "value": "No"
+       },
+       {
+        "value": "Unsure"
+       }
+      ]
+     },
+     {
+      "field": "action",
+      "alias": "Recommended action",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "No action"
+       },
+       {
+        "value": "Monitor"
+       },
+       {
+        "value": "Prune"
+       },
+       {
+        "value": "Fell"
+       },
+       {
+        "value": "Relocate target"
+       },
+       {
+        "value": "Close area"
+       },
+       {
+        "value": "Refer to arborist"
+       }
+      ]
+     },
+     {
+      "field": "priority",
+      "alias": "Priority",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Immediate"
+       },
+       {
+        "value": "Within 30 days"
+       },
+       {
+        "value": "This season"
+       },
+       {
+        "value": "Routine"
+       }
+      ]
+     },
+     {
+      "field": "notes",
+      "alias": "Notes",
+      "widget": "text"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "alias": "GPS accuracy (m)",
+      "widget": "number",
+      "defaultValue": "round(@position_horizontal_accuracy, 1)",
+      "min": 0
+     },
+     {
+      "field": "placed_by",
+      "alias": "Location source",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "GPS",
+        "label": "GPS fix"
+       },
+       {
+        "value": "Map",
+        "label": "Placed on map"
+       }
+      ],
+      "defaultValue": "if(@position_coordinate is not null, 'GPS', 'Map')"
+     }
+    ],
+    "sections": [
+     {
+      "title": "Observation",
+      "fields": [
+       "obs_date",
+       "observer",
+       "state",
+       "club_section"
+      ]
+     },
+     {
+      "title": "Tree",
+      "fields": [
+       "tree_species",
+       "dbh_in",
+       "status",
+       "defects"
+      ]
+     },
+     {
+      "title": "Risk (ISA matrix)",
+      "fields": [
+       "target",
+       "lof",
+       "loi",
+       "consequence",
+       "risk_rating"
+      ]
+     },
+     {
+      "title": "Wildlife and action",
+      "fields": [
+       "bat_roost",
+       "action",
+       "priority"
+      ]
+     },
+     {
+      "title": "Notes",
+      "fields": [
+       "notes"
+      ]
+     },
+     {
+      "title": "Record",
+      "fields": [
+       "obs_id",
+       "gps_accuracy_m",
+       "placed_by"
+      ]
+     }
+    ]
+   },
+   "editorTracking": {
+    "enabled": true,
+    "createdByField": "created_by",
+    "createdAtField": "created_at",
+    "editedByField": "edited_by",
+    "editedAtField": "edited_at"
+   },
+   "popup": {
+    "click": true,
+    "titleField": "tree_species",
+    "fields": [
+     {
+      "field": "obs_date",
+      "label": "Date and time"
+     },
+     {
+      "field": "observer",
+      "label": "Observer"
+     },
+     {
+      "field": "state",
+      "label": "State"
+     },
+     {
+      "field": "club_section",
+      "label": "Club section"
+     },
+     {
+      "field": "tree_species",
+      "label": "Tree species"
+     },
+     {
+      "field": "dbh_in",
+      "label": "DBH (in)"
+     },
+     {
+      "field": "status",
+      "label": "Tree status"
+     },
+     {
+      "field": "defects",
+      "label": "Defects"
+     },
+     {
+      "field": "target",
+      "label": "Target"
+     },
+     {
+      "field": "lof",
+      "label": "Likelihood of failure"
+     },
+     {
+      "field": "loi",
+      "label": "Likelihood of impacting target"
+     },
+     {
+      "field": "consequence",
+      "label": "Consequences of failure"
+     },
+     {
+      "field": "risk_rating",
+      "label": "Risk rating"
+     },
+     {
+      "field": "bat_roost",
+      "label": "Potential bat roost (loose bark, cavities, cracks)"
+     },
+     {
+      "field": "action",
+      "label": "Recommended action"
+     },
+     {
+      "field": "priority",
+      "label": "Priority"
+     },
+     {
+      "field": "notes",
+      "label": "Notes"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "label": "GPS accuracy (m)"
+     },
+     {
+      "field": "photo",
+      "label": "Photo",
+      "kind": "image"
+     }
+    ],
+    "maxWidth": 420,
+    "imageHeight": 220
+   },
+   "descriptiveMetadata": {
+    "title": "Hazard trees",
+    "abstract": "Field observations collected along the Appalachian National Scenic Trail (Hazard trees).",
+    "keywords": [
+     "Appalachian Trail",
+     "APPA",
+     "field collection"
+    ],
+    "contact": {
+     "organization": "National Park Service, Appalachian Trail Park Office"
+    }
+   }
+  },
+  {
+   "id": "c-trail",
+   "name": "Trail condition issues",
+   "type": "geojson",
+   "source": {
+    "type": "geojson"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "fillColor": "#1F618D",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 2,
+    "circleRadius": 7,
+    "fillOpacity": 1,
+    "vectorStyleMode": "categorized",
+    "vectorStyleProperty": "severity",
+    "vectorStyleStops": [
+     {
+      "value": "1",
+      "color": "#85C1E9",
+      "label": "Minor"
+     },
+     {
+      "value": "2",
+      "color": "#3498DB",
+      "label": "Moderate"
+     },
+     {
+      "value": "3",
+      "color": "#1F618D",
+      "label": "Major"
+     },
+     {
+      "value": "4",
+      "color": "#0B1320",
+      "label": "Impassable/unsafe"
+     }
+    ]
+   },
+   "groupId": "g-collect",
+   "geojson": {
+    "type": "FeatureCollection",
+    "features": []
+   },
+   "metadata": {
+    "fieldCollection": true,
+    "collectionGeometry": "point",
+    "collectionSchema": {
+     "fields": [
+      {
+       "key": "obs_id",
+       "label": "Record ID",
+       "type": "text"
+      },
+      {
+       "key": "obs_date",
+       "label": "Date and time",
+       "type": "date",
+       "required": true
+      },
+      {
+       "key": "observer",
+       "label": "Observer",
+       "type": "text",
+       "required": true
+      },
+      {
+       "key": "state",
+       "label": "State",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "GA",
+        "NC",
+        "TN",
+        "VA",
+        "WV",
+        "MD",
+        "PA",
+        "NJ",
+        "NY",
+        "CT",
+        "MA",
+        "VT",
+        "NH",
+        "ME"
+       ]
+      },
+      {
+       "key": "club_section",
+       "label": "Club section",
+       "type": "text"
+      },
+      {
+       "key": "issue",
+       "label": "Issue",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "Erosion/gullying",
+        "Muddy or wet treadway",
+        "Drainage structure failed",
+        "Water bar/check dam needed",
+        "Trail braiding",
+        "Widening",
+        "Blowdown across trail",
+        "Brushing needed",
+        "Blaze missing or faded",
+        "Signage damaged/missing",
+        "Rock step/crib wall failing",
+        "Unauthorized trail",
+        "Illegal campsite/fire ring",
+        "Trash or dumping",
+        "ATV/vehicle intrusion",
+        "Encroachment",
+        "Other (see notes)"
+       ]
+      },
+      {
+       "key": "severity",
+       "label": "Severity",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+       ]
+      },
+      {
+       "key": "extent_ft",
+       "label": "Length affected (ft)",
+       "type": "number"
+      },
+      {
+       "key": "tread_width_in",
+       "label": "Tread width (in)",
+       "type": "number"
+      },
+      {
+       "key": "incision_in",
+       "label": "Max incision depth (in)",
+       "type": "number"
+      },
+      {
+       "key": "resource_impact",
+       "label": "Resource impact",
+       "type": "choice",
+       "options": [
+        "None",
+        "Vegetation loss",
+        "Soil loss",
+        "Water quality",
+        "Wetland",
+        "Cultural feature",
+        "Multiple"
+       ]
+      },
+      {
+       "key": "work_needed",
+       "label": "Work needed",
+       "type": "text"
+      },
+      {
+       "key": "crew_type",
+       "label": "Crew needed",
+       "type": "choice",
+       "options": [
+        "Volunteer maintainer",
+        "Club crew",
+        "Trail crew (ATC/CCC)",
+        "NPS staff",
+        "Contractor"
+       ]
+      },
+      {
+       "key": "notes",
+       "label": "Notes",
+       "type": "text"
+      },
+      {
+       "key": "gps_accuracy_m",
+       "label": "GPS accuracy (m)",
+       "type": "number"
+      },
+      {
+       "key": "placed_by",
+       "label": "Location source",
+       "type": "text"
+      }
+     ]
+    }
+   },
+   "attributeForm": {
+    "fields": [
+     {
+      "field": "obs_id",
+      "alias": "Record ID",
+      "widget": "text",
+      "defaultValue": "uuid('WithoutBraces')"
+     },
+     {
+      "field": "obs_date",
+      "alias": "Date and time",
+      "widget": "date",
+      "required": true,
+      "defaultValue": "now()"
+     },
+     {
+      "field": "observer",
+      "alias": "Observer",
+      "widget": "text",
+      "required": true,
+      "defaultValue": "if(@user_full_name = 'local-user', NULL, @user_full_name)"
+     },
+     {
+      "field": "state",
+      "alias": "State",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "GA"
+       },
+       {
+        "value": "NC"
+       },
+       {
+        "value": "TN"
+       },
+       {
+        "value": "VA"
+       },
+       {
+        "value": "WV"
+       },
+       {
+        "value": "MD"
+       },
+       {
+        "value": "PA"
+       },
+       {
+        "value": "NJ"
+       },
+       {
+        "value": "NY"
+       },
+       {
+        "value": "CT"
+       },
+       {
+        "value": "MA"
+       },
+       {
+        "value": "VT"
+       },
+       {
+        "value": "NH"
+       },
+       {
+        "value": "ME"
+       }
+      ]
+     },
+     {
+      "field": "club_section",
+      "alias": "Club section",
+      "widget": "text"
+     },
+     {
+      "field": "issue",
+      "alias": "Issue",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "Erosion/gullying"
+       },
+       {
+        "value": "Muddy or wet treadway"
+       },
+       {
+        "value": "Drainage structure failed"
+       },
+       {
+        "value": "Water bar/check dam needed"
+       },
+       {
+        "value": "Trail braiding"
+       },
+       {
+        "value": "Widening"
+       },
+       {
+        "value": "Blowdown across trail"
+       },
+       {
+        "value": "Brushing needed"
+       },
+       {
+        "value": "Blaze missing or faded"
+       },
+       {
+        "value": "Signage damaged/missing"
+       },
+       {
+        "value": "Rock step/crib wall failing"
+       },
+       {
+        "value": "Unauthorized trail"
+       },
+       {
+        "value": "Illegal campsite/fire ring"
+       },
+       {
+        "value": "Trash or dumping"
+       },
+       {
+        "value": "ATV/vehicle intrusion"
+       },
+       {
+        "value": "Encroachment"
+       },
+       {
+        "value": "Other (see notes)"
+       }
+      ]
+     },
+     {
+      "field": "severity",
+      "alias": "Severity",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "1",
+        "label": "1 – Minor"
+       },
+       {
+        "value": "2",
+        "label": "2 – Moderate"
+       },
+       {
+        "value": "3",
+        "label": "3 – Major"
+       },
+       {
+        "value": "4",
+        "label": "4 – Impassable/unsafe"
+       }
+      ]
+     },
+     {
+      "field": "extent_ft",
+      "alias": "Length affected (ft)",
+      "widget": "number",
+      "min": 0
+     },
+     {
+      "field": "tread_width_in",
+      "alias": "Tread width (in)",
+      "widget": "number",
+      "min": 0
+     },
+     {
+      "field": "incision_in",
+      "alias": "Max incision depth (in)",
+      "widget": "number",
+      "min": 0
+     },
+     {
+      "field": "resource_impact",
+      "alias": "Resource impact",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "None"
+       },
+       {
+        "value": "Vegetation loss"
+       },
+       {
+        "value": "Soil loss"
+       },
+       {
+        "value": "Water quality"
+       },
+       {
+        "value": "Wetland"
+       },
+       {
+        "value": "Cultural feature"
+       },
+       {
+        "value": "Multiple"
+       }
+      ]
+     },
+     {
+      "field": "work_needed",
+      "alias": "Work needed",
+      "widget": "text"
+     },
+     {
+      "field": "crew_type",
+      "alias": "Crew needed",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Volunteer maintainer"
+       },
+       {
+        "value": "Club crew"
+       },
+       {
+        "value": "Trail crew (ATC/CCC)"
+       },
+       {
+        "value": "NPS staff"
+       },
+       {
+        "value": "Contractor"
+       }
+      ]
+     },
+     {
+      "field": "notes",
+      "alias": "Notes",
+      "widget": "text"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "alias": "GPS accuracy (m)",
+      "widget": "number",
+      "defaultValue": "round(@position_horizontal_accuracy, 1)",
+      "min": 0
+     },
+     {
+      "field": "placed_by",
+      "alias": "Location source",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "GPS",
+        "label": "GPS fix"
+       },
+       {
+        "value": "Map",
+        "label": "Placed on map"
+       }
+      ],
+      "defaultValue": "if(@position_coordinate is not null, 'GPS', 'Map')"
+     }
+    ],
+    "sections": [
+     {
+      "title": "Observation",
+      "fields": [
+       "obs_date",
+       "observer",
+       "state",
+       "club_section"
+      ]
+     },
+     {
+      "title": "Condition",
+      "fields": [
+       "issue",
+       "severity",
+       "extent_ft",
+       "tread_width_in",
+       "incision_in",
+       "resource_impact"
+      ]
+     },
+     {
+      "title": "Work",
+      "fields": [
+       "work_needed",
+       "crew_type"
+      ]
+     },
+     {
+      "title": "Notes",
+      "fields": [
+       "notes"
+      ]
+     },
+     {
+      "title": "Record",
+      "fields": [
+       "obs_id",
+       "gps_accuracy_m",
+       "placed_by"
+      ]
+     }
+    ]
+   },
+   "editorTracking": {
+    "enabled": true,
+    "createdByField": "created_by",
+    "createdAtField": "created_at",
+    "editedByField": "edited_by",
+    "editedAtField": "edited_at"
+   },
+   "popup": {
+    "click": true,
+    "titleField": "issue",
+    "fields": [
+     {
+      "field": "obs_date",
+      "label": "Date and time"
+     },
+     {
+      "field": "observer",
+      "label": "Observer"
+     },
+     {
+      "field": "state",
+      "label": "State"
+     },
+     {
+      "field": "club_section",
+      "label": "Club section"
+     },
+     {
+      "field": "issue",
+      "label": "Issue"
+     },
+     {
+      "field": "severity",
+      "label": "Severity"
+     },
+     {
+      "field": "extent_ft",
+      "label": "Length affected (ft)"
+     },
+     {
+      "field": "tread_width_in",
+      "label": "Tread width (in)"
+     },
+     {
+      "field": "incision_in",
+      "label": "Max incision depth (in)"
+     },
+     {
+      "field": "resource_impact",
+      "label": "Resource impact"
+     },
+     {
+      "field": "work_needed",
+      "label": "Work needed"
+     },
+     {
+      "field": "crew_type",
+      "label": "Crew needed"
+     },
+     {
+      "field": "notes",
+      "label": "Notes"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "label": "GPS accuracy (m)"
+     },
+     {
+      "field": "photo",
+      "label": "Photo",
+      "kind": "image"
+     }
+    ],
+    "maxWidth": 420,
+    "imageHeight": 220
+   },
+   "descriptiveMetadata": {
+    "title": "Trail condition issues",
+    "abstract": "Field observations collected along the Appalachian National Scenic Trail (Trail condition issues).",
+    "keywords": [
+     "Appalachian Trail",
+     "APPA",
+     "field collection"
+    ],
+    "contact": {
+     "organization": "National Park Service, Appalachian Trail Park Office"
+    }
+   }
+  },
+  {
+   "id": "c-facility",
+   "name": "Facility condition",
+   "type": "geojson",
+   "source": {
+    "type": "geojson"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "fillColor": "#D62839",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 2,
+    "circleRadius": 7,
+    "fillOpacity": 1
+   },
+   "groupId": "g-collect",
+   "geojson": {
+    "type": "FeatureCollection",
+    "features": []
+   },
+   "metadata": {
+    "fieldCollection": true,
+    "collectionGeometry": "point",
+    "collectionSchema": {
+     "fields": [
+      {
+       "key": "obs_id",
+       "label": "Record ID",
+       "type": "text"
+      },
+      {
+       "key": "obs_date",
+       "label": "Date and time",
+       "type": "date",
+       "required": true
+      },
+      {
+       "key": "observer",
+       "label": "Observer",
+       "type": "text",
+       "required": true
+      },
+      {
+       "key": "state",
+       "label": "State",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "GA",
+        "NC",
+        "TN",
+        "VA",
+        "WV",
+        "MD",
+        "PA",
+        "NJ",
+        "NY",
+        "CT",
+        "MA",
+        "VT",
+        "NH",
+        "ME"
+       ]
+      },
+      {
+       "key": "club_section",
+       "label": "Club section",
+       "type": "text"
+      },
+      {
+       "key": "facility_type",
+       "label": "Facility type",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "Shelter",
+        "Privy",
+        "Campsite",
+        "Bridge",
+        "Parking area",
+        "Kiosk/sign",
+        "Spring/water source",
+        "Bear box/cables",
+        "Other"
+       ]
+      },
+      {
+       "key": "facility_name",
+       "label": "Facility name",
+       "type": "text",
+       "required": true
+      },
+      {
+       "key": "condition",
+       "label": "Overall condition",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "Good",
+        "Fair",
+        "Poor",
+        "Unsafe/closed"
+       ]
+      },
+      {
+       "key": "components",
+       "label": "Components needing work",
+       "type": "text"
+      },
+      {
+       "key": "water_flowing",
+       "label": "Water source flowing",
+       "type": "choice",
+       "options": [
+        "Strong",
+        "Weak",
+        "Dry"
+       ]
+      },
+      {
+       "key": "privy_level",
+       "label": "Privy fill level",
+       "type": "choice",
+       "options": [
+        "Low",
+        "Half",
+        "Near full",
+        "Full"
+       ]
+      },
+      {
+       "key": "overuse",
+       "label": "Overuse impacts",
+       "type": "choice",
+       "options": [
+        "None",
+        "Bare soil expansion",
+        "Tree damage",
+        "Fire rings",
+        "Trash",
+        "Human waste",
+        "Multiple"
+       ]
+      },
+      {
+       "key": "action",
+       "label": "Recommended action",
+       "type": "text"
+      },
+      {
+       "key": "notes",
+       "label": "Notes",
+       "type": "text"
+      },
+      {
+       "key": "gps_accuracy_m",
+       "label": "GPS accuracy (m)",
+       "type": "number"
+      },
+      {
+       "key": "placed_by",
+       "label": "Location source",
+       "type": "text"
+      }
+     ]
+    }
+   },
+   "attributeForm": {
+    "fields": [
+     {
+      "field": "obs_id",
+      "alias": "Record ID",
+      "widget": "text",
+      "defaultValue": "uuid('WithoutBraces')"
+     },
+     {
+      "field": "obs_date",
+      "alias": "Date and time",
+      "widget": "date",
+      "required": true,
+      "defaultValue": "now()"
+     },
+     {
+      "field": "observer",
+      "alias": "Observer",
+      "widget": "text",
+      "required": true,
+      "defaultValue": "if(@user_full_name = 'local-user', NULL, @user_full_name)"
+     },
+     {
+      "field": "state",
+      "alias": "State",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "GA"
+       },
+       {
+        "value": "NC"
+       },
+       {
+        "value": "TN"
+       },
+       {
+        "value": "VA"
+       },
+       {
+        "value": "WV"
+       },
+       {
+        "value": "MD"
+       },
+       {
+        "value": "PA"
+       },
+       {
+        "value": "NJ"
+       },
+       {
+        "value": "NY"
+       },
+       {
+        "value": "CT"
+       },
+       {
+        "value": "MA"
+       },
+       {
+        "value": "VT"
+       },
+       {
+        "value": "NH"
+       },
+       {
+        "value": "ME"
+       }
+      ]
+     },
+     {
+      "field": "club_section",
+      "alias": "Club section",
+      "widget": "text"
+     },
+     {
+      "field": "facility_type",
+      "alias": "Facility type",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "Shelter"
+       },
+       {
+        "value": "Privy"
+       },
+       {
+        "value": "Campsite"
+       },
+       {
+        "value": "Bridge"
+       },
+       {
+        "value": "Parking area"
+       },
+       {
+        "value": "Kiosk/sign"
+       },
+       {
+        "value": "Spring/water source"
+       },
+       {
+        "value": "Bear box/cables"
+       },
+       {
+        "value": "Other"
+       }
+      ]
+     },
+     {
+      "field": "facility_name",
+      "alias": "Facility name",
+      "widget": "text",
+      "required": true
+     },
+     {
+      "field": "condition",
+      "alias": "Overall condition",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "Good"
+       },
+       {
+        "value": "Fair"
+       },
+       {
+        "value": "Poor"
+       },
+       {
+        "value": "Unsafe/closed"
+       }
+      ]
+     },
+     {
+      "field": "components",
+      "alias": "Components needing work",
+      "widget": "text"
+     },
+     {
+      "field": "water_flowing",
+      "alias": "Water source flowing",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Strong"
+       },
+       {
+        "value": "Weak"
+       },
+       {
+        "value": "Dry"
+       }
+      ],
+      "visibilityExpression": "[\"==\", [\"get\", \"facility_type\"], \"Spring/water source\"]"
+     },
+     {
+      "field": "privy_level",
+      "alias": "Privy fill level",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Low"
+       },
+       {
+        "value": "Half"
+       },
+       {
+        "value": "Near full"
+       },
+       {
+        "value": "Full"
+       }
+      ],
+      "visibilityExpression": "[\"==\", [\"get\", \"facility_type\"], \"Privy\"]"
+     },
+     {
+      "field": "overuse",
+      "alias": "Overuse impacts",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "None"
+       },
+       {
+        "value": "Bare soil expansion"
+       },
+       {
+        "value": "Tree damage"
+       },
+       {
+        "value": "Fire rings"
+       },
+       {
+        "value": "Trash"
+       },
+       {
+        "value": "Human waste"
+       },
+       {
+        "value": "Multiple"
+       }
+      ]
+     },
+     {
+      "field": "action",
+      "alias": "Recommended action",
+      "widget": "text"
+     },
+     {
+      "field": "notes",
+      "alias": "Notes",
+      "widget": "text"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "alias": "GPS accuracy (m)",
+      "widget": "number",
+      "defaultValue": "round(@position_horizontal_accuracy, 1)",
+      "min": 0
+     },
+     {
+      "field": "placed_by",
+      "alias": "Location source",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "GPS",
+        "label": "GPS fix"
+       },
+       {
+        "value": "Map",
+        "label": "Placed on map"
+       }
+      ],
+      "defaultValue": "if(@position_coordinate is not null, 'GPS', 'Map')"
+     }
+    ],
+    "sections": [
+     {
+      "title": "Observation",
+      "fields": [
+       "obs_date",
+       "observer",
+       "state",
+       "club_section"
+      ]
+     },
+     {
+      "title": "Facility",
+      "fields": [
+       "facility_type",
+       "facility_name",
+       "condition",
+       "components",
+       "water_flowing",
+       "privy_level",
+       "overuse",
+       "action"
+      ]
+     },
+     {
+      "title": "Notes",
+      "fields": [
+       "notes"
+      ]
+     },
+     {
+      "title": "Record",
+      "fields": [
+       "obs_id",
+       "gps_accuracy_m",
+       "placed_by"
+      ]
+     }
+    ]
+   },
+   "editorTracking": {
+    "enabled": true,
+    "createdByField": "created_by",
+    "createdAtField": "created_at",
+    "editedByField": "edited_by",
+    "editedAtField": "edited_at"
+   },
+   "popup": {
+    "click": true,
+    "titleField": "facility_name",
+    "fields": [
+     {
+      "field": "obs_date",
+      "label": "Date and time"
+     },
+     {
+      "field": "observer",
+      "label": "Observer"
+     },
+     {
+      "field": "state",
+      "label": "State"
+     },
+     {
+      "field": "club_section",
+      "label": "Club section"
+     },
+     {
+      "field": "facility_type",
+      "label": "Facility type"
+     },
+     {
+      "field": "facility_name",
+      "label": "Facility name"
+     },
+     {
+      "field": "condition",
+      "label": "Overall condition"
+     },
+     {
+      "field": "components",
+      "label": "Components needing work"
+     },
+     {
+      "field": "water_flowing",
+      "label": "Water source flowing"
+     },
+     {
+      "field": "privy_level",
+      "label": "Privy fill level"
+     },
+     {
+      "field": "overuse",
+      "label": "Overuse impacts"
+     },
+     {
+      "field": "action",
+      "label": "Recommended action"
+     },
+     {
+      "field": "notes",
+      "label": "Notes"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "label": "GPS accuracy (m)"
+     },
+     {
+      "field": "photo",
+      "label": "Photo",
+      "kind": "image"
+     }
+    ],
+    "maxWidth": 420,
+    "imageHeight": 220
+   },
+   "descriptiveMetadata": {
+    "title": "Facility condition",
+    "abstract": "Field observations collected along the Appalachian National Scenic Trail (Facility condition).",
+    "keywords": [
+     "Appalachian Trail",
+     "APPA",
+     "field collection"
+    ],
+    "contact": {
+     "organization": "National Park Service, Appalachian Trail Park Office"
+    }
+   }
+  },
+  {
+   "id": "c-grass",
+   "name": "Grassland field checks",
+   "type": "geojson",
+   "source": {
+    "type": "geojson"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "fillColor": "#B5A33A",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 2,
+    "circleRadius": 7,
+    "fillOpacity": 1
+   },
+   "groupId": "g-collect",
+   "geojson": {
+    "type": "FeatureCollection",
+    "features": []
+   },
+   "metadata": {
+    "fieldCollection": true,
+    "collectionGeometry": "point",
+    "collectionSchema": {
+     "fields": [
+      {
+       "key": "obs_id",
+       "label": "Record ID",
+       "type": "text"
+      },
+      {
+       "key": "obs_date",
+       "label": "Date and time",
+       "type": "date",
+       "required": true
+      },
+      {
+       "key": "observer",
+       "label": "Observer",
+       "type": "text",
+       "required": true
+      },
+      {
+       "key": "state",
+       "label": "State",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "GA",
+        "NC",
+        "TN",
+        "VA",
+        "WV",
+        "MD",
+        "PA",
+        "NJ",
+        "NY",
+        "CT",
+        "MA",
+        "VT",
+        "NH",
+        "ME"
+       ]
+      },
+      {
+       "key": "club_section",
+       "label": "Club section",
+       "type": "text"
+      },
+      {
+       "key": "field_name",
+       "label": "Field or site name",
+       "type": "text",
+       "required": true
+      },
+      {
+       "key": "land_use",
+       "label": "Current use",
+       "type": "choice",
+       "options": [
+        "Hay",
+        "Pasture",
+        "Row crop",
+        "Mowed meadow",
+        "Native warm-season grass",
+        "Pollinator planting",
+        "Bald",
+        "Old field (unmanaged)"
+       ]
+      },
+      {
+       "key": "mow_status",
+       "label": "Mowing / management status",
+       "type": "choice",
+       "options": [
+        "Recently mowed",
+        "Mowed this season",
+        "Not mowed this season",
+        "Grazed",
+        "Burned",
+        "Unknown"
+       ]
+      },
+      {
+       "key": "veg_height_in",
+       "label": "Average vegetation height (in)",
+       "type": "number"
+      },
+      {
+       "key": "woody_cover",
+       "label": "Woody encroachment",
+       "type": "choice",
+       "options": [
+        "0",
+        "1-10",
+        "10-25",
+        "25-50",
+        ">50"
+       ]
+      },
+      {
+       "key": "invasive_cover",
+       "label": "Invasive plant cover",
+       "type": "choice",
+       "options": [
+        "0",
+        "1-10",
+        "10-25",
+        "25-50",
+        ">50"
+       ]
+      },
+      {
+       "key": "native_forbs",
+       "label": "Native forbs in bloom",
+       "type": "text"
+      },
+      {
+       "key": "grassland_birds",
+       "label": "Grassland birds seen or heard",
+       "type": "text"
+      },
+      {
+       "key": "agsup",
+       "label": "Under an Agricultural SUP",
+       "type": "choice",
+       "options": [
+        "Yes",
+        "No",
+        "Unknown"
+       ]
+      },
+      {
+       "key": "restoration_need",
+       "label": "Restoration need",
+       "type": "choice",
+       "options": [
+        "None",
+        "Brush removal",
+        "Invasive control",
+        "Reseed natives",
+        "Change mowing timing",
+        "Boundary/encroachment"
+       ]
+      },
+      {
+       "key": "notes",
+       "label": "Notes",
+       "type": "text"
+      },
+      {
+       "key": "gps_accuracy_m",
+       "label": "GPS accuracy (m)",
+       "type": "number"
+      },
+      {
+       "key": "placed_by",
+       "label": "Location source",
+       "type": "text"
+      }
+     ]
+    }
+   },
+   "attributeForm": {
+    "fields": [
+     {
+      "field": "obs_id",
+      "alias": "Record ID",
+      "widget": "text",
+      "defaultValue": "uuid('WithoutBraces')"
+     },
+     {
+      "field": "obs_date",
+      "alias": "Date and time",
+      "widget": "date",
+      "required": true,
+      "defaultValue": "now()"
+     },
+     {
+      "field": "observer",
+      "alias": "Observer",
+      "widget": "text",
+      "required": true,
+      "defaultValue": "if(@user_full_name = 'local-user', NULL, @user_full_name)"
+     },
+     {
+      "field": "state",
+      "alias": "State",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "GA"
+       },
+       {
+        "value": "NC"
+       },
+       {
+        "value": "TN"
+       },
+       {
+        "value": "VA"
+       },
+       {
+        "value": "WV"
+       },
+       {
+        "value": "MD"
+       },
+       {
+        "value": "PA"
+       },
+       {
+        "value": "NJ"
+       },
+       {
+        "value": "NY"
+       },
+       {
+        "value": "CT"
+       },
+       {
+        "value": "MA"
+       },
+       {
+        "value": "VT"
+       },
+       {
+        "value": "NH"
+       },
+       {
+        "value": "ME"
+       }
+      ]
+     },
+     {
+      "field": "club_section",
+      "alias": "Club section",
+      "widget": "text"
+     },
+     {
+      "field": "field_name",
+      "alias": "Field or site name",
+      "widget": "text",
+      "required": true
+     },
+     {
+      "field": "land_use",
+      "alias": "Current use",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Hay"
+       },
+       {
+        "value": "Pasture"
+       },
+       {
+        "value": "Row crop"
+       },
+       {
+        "value": "Mowed meadow"
+       },
+       {
+        "value": "Native warm-season grass"
+       },
+       {
+        "value": "Pollinator planting"
+       },
+       {
+        "value": "Bald"
+       },
+       {
+        "value": "Old field (unmanaged)"
+       }
+      ]
+     },
+     {
+      "field": "mow_status",
+      "alias": "Mowing / management status",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Recently mowed"
+       },
+       {
+        "value": "Mowed this season"
+       },
+       {
+        "value": "Not mowed this season"
+       },
+       {
+        "value": "Grazed"
+       },
+       {
+        "value": "Burned"
+       },
+       {
+        "value": "Unknown"
+       }
+      ]
+     },
+     {
+      "field": "veg_height_in",
+      "alias": "Average vegetation height (in)",
+      "widget": "number",
+      "min": 0
+     },
+     {
+      "field": "woody_cover",
+      "alias": "Woody encroachment",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "0",
+        "label": "None"
+       },
+       {
+        "value": "1-10",
+        "label": "1–10%"
+       },
+       {
+        "value": "10-25",
+        "label": "10–25%"
+       },
+       {
+        "value": "25-50",
+        "label": "25–50%"
+       },
+       {
+        "value": ">50",
+        "label": ">50%"
+       }
+      ]
+     },
+     {
+      "field": "invasive_cover",
+      "alias": "Invasive plant cover",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "0",
+        "label": "None"
+       },
+       {
+        "value": "1-10",
+        "label": "1–10%"
+       },
+       {
+        "value": "10-25",
+        "label": "10–25%"
+       },
+       {
+        "value": "25-50",
+        "label": "25–50%"
+       },
+       {
+        "value": ">50",
+        "label": ">50%"
+       }
+      ]
+     },
+     {
+      "field": "native_forbs",
+      "alias": "Native forbs in bloom",
+      "widget": "text"
+     },
+     {
+      "field": "grassland_birds",
+      "alias": "Grassland birds seen or heard",
+      "widget": "text"
+     },
+     {
+      "field": "agsup",
+      "alias": "Under an Agricultural SUP",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Yes"
+       },
+       {
+        "value": "No"
+       },
+       {
+        "value": "Unknown"
+       }
+      ]
+     },
+     {
+      "field": "restoration_need",
+      "alias": "Restoration need",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "None"
+       },
+       {
+        "value": "Brush removal"
+       },
+       {
+        "value": "Invasive control"
+       },
+       {
+        "value": "Reseed natives"
+       },
+       {
+        "value": "Change mowing timing"
+       },
+       {
+        "value": "Boundary/encroachment"
+       }
+      ]
+     },
+     {
+      "field": "notes",
+      "alias": "Notes",
+      "widget": "text"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "alias": "GPS accuracy (m)",
+      "widget": "number",
+      "defaultValue": "round(@position_horizontal_accuracy, 1)",
+      "min": 0
+     },
+     {
+      "field": "placed_by",
+      "alias": "Location source",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "GPS",
+        "label": "GPS fix"
+       },
+       {
+        "value": "Map",
+        "label": "Placed on map"
+       }
+      ],
+      "defaultValue": "if(@position_coordinate is not null, 'GPS', 'Map')"
+     }
+    ],
+    "sections": [
+     {
+      "title": "Observation",
+      "fields": [
+       "obs_date",
+       "observer",
+       "state",
+       "club_section"
+      ]
+     },
+     {
+      "title": "Field",
+      "fields": [
+       "field_name",
+       "land_use",
+       "mow_status",
+       "veg_height_in",
+       "agsup"
+      ]
+     },
+     {
+      "title": "Condition",
+      "fields": [
+       "woody_cover",
+       "invasive_cover",
+       "native_forbs",
+       "grassland_birds",
+       "restoration_need"
+      ]
+     },
+     {
+      "title": "Notes",
+      "fields": [
+       "notes"
+      ]
+     },
+     {
+      "title": "Record",
+      "fields": [
+       "obs_id",
+       "gps_accuracy_m",
+       "placed_by"
+      ]
+     }
+    ]
+   },
+   "editorTracking": {
+    "enabled": true,
+    "createdByField": "created_by",
+    "createdAtField": "created_at",
+    "editedByField": "edited_by",
+    "editedAtField": "edited_at"
+   },
+   "popup": {
+    "click": true,
+    "titleField": "field_name",
+    "fields": [
+     {
+      "field": "obs_date",
+      "label": "Date and time"
+     },
+     {
+      "field": "observer",
+      "label": "Observer"
+     },
+     {
+      "field": "state",
+      "label": "State"
+     },
+     {
+      "field": "club_section",
+      "label": "Club section"
+     },
+     {
+      "field": "field_name",
+      "label": "Field or site name"
+     },
+     {
+      "field": "land_use",
+      "label": "Current use"
+     },
+     {
+      "field": "mow_status",
+      "label": "Mowing / management status"
+     },
+     {
+      "field": "veg_height_in",
+      "label": "Average vegetation height (in)"
+     },
+     {
+      "field": "woody_cover",
+      "label": "Woody encroachment"
+     },
+     {
+      "field": "invasive_cover",
+      "label": "Invasive plant cover"
+     },
+     {
+      "field": "native_forbs",
+      "label": "Native forbs in bloom"
+     },
+     {
+      "field": "grassland_birds",
+      "label": "Grassland birds seen or heard"
+     },
+     {
+      "field": "agsup",
+      "label": "Under an Agricultural SUP"
+     },
+     {
+      "field": "restoration_need",
+      "label": "Restoration need"
+     },
+     {
+      "field": "notes",
+      "label": "Notes"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "label": "GPS accuracy (m)"
+     },
+     {
+      "field": "photo",
+      "label": "Photo",
+      "kind": "image"
+     }
+    ],
+    "maxWidth": 420,
+    "imageHeight": 220
+   },
+   "descriptiveMetadata": {
+    "title": "Grassland field checks",
+    "abstract": "Field observations collected along the Appalachian National Scenic Trail (Grassland field checks).",
+    "keywords": [
+     "Appalachian Trail",
+     "APPA",
+     "field collection"
+    ],
+    "contact": {
+     "organization": "National Park Service, Appalachian Trail Park Office"
+    }
+   }
+  },
+  {
+   "id": "c-area",
+   "name": "Treatment and survey areas",
+   "type": "geojson",
+   "source": {
+    "type": "geojson"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "fillColor": "#117A65",
+    "strokeColor": "#117A65",
+    "strokeWidth": 1.5,
+    "circleRadius": 7,
+    "fillOpacity": 0.3
+   },
+   "groupId": "g-collect",
+   "geojson": {
+    "type": "FeatureCollection",
+    "features": []
+   },
+   "metadata": {
+    "fieldCollection": true,
+    "collectionGeometry": "polygon",
+    "collectionSchema": {
+     "fields": [
+      {
+       "key": "obs_id",
+       "label": "Record ID",
+       "type": "text"
+      },
+      {
+       "key": "obs_date",
+       "label": "Date and time",
+       "type": "date",
+       "required": true
+      },
+      {
+       "key": "observer",
+       "label": "Observer",
+       "type": "text",
+       "required": true
+      },
+      {
+       "key": "state",
+       "label": "State",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "GA",
+        "NC",
+        "TN",
+        "VA",
+        "WV",
+        "MD",
+        "PA",
+        "NJ",
+        "NY",
+        "CT",
+        "MA",
+        "VT",
+        "NH",
+        "ME"
+       ]
+      },
+      {
+       "key": "club_section",
+       "label": "Club section",
+       "type": "text"
+      },
+      {
+       "key": "activity",
+       "label": "Activity",
+       "type": "choice",
+       "required": true,
+       "options": [
+        "Invasive treatment",
+        "Invasive survey",
+        "Mowing/brush cut",
+        "Seeding/planting",
+        "Hemlock treatment",
+        "Biocontrol release",
+        "Rare plant survey",
+        "Other (see notes)"
+       ]
+      },
+      {
+       "key": "target_species",
+       "label": "Target species",
+       "type": "text"
+      },
+      {
+       "key": "method",
+       "label": "Method",
+       "type": "choice",
+       "options": [
+        "Hand pull",
+        "Cut",
+        "Foliar spray",
+        "Cut stump",
+        "Basal bark",
+        "Hack and squirt",
+        "Soil drench/injection",
+        "Mechanical",
+        "Survey only"
+       ]
+      },
+      {
+       "key": "product",
+       "label": "Herbicide/pesticide product",
+       "type": "text"
+      },
+      {
+       "key": "epa_reg",
+       "label": "EPA Reg. No.",
+       "type": "text"
+      },
+      {
+       "key": "amount_used",
+       "label": "Amount of mix used (gal)",
+       "type": "number"
+      },
+      {
+       "key": "applicator",
+       "label": "Certified applicator",
+       "type": "text"
+      },
+      {
+       "key": "pct_controlled",
+       "label": "Estimated % of target controlled",
+       "type": "number"
+      },
+      {
+       "key": "crew",
+       "label": "Crew or partner",
+       "type": "text"
+      },
+      {
+       "key": "person_hours",
+       "label": "Person-hours",
+       "type": "number"
+      },
+      {
+       "key": "notes",
+       "label": "Notes",
+       "type": "text"
+      },
+      {
+       "key": "gps_accuracy_m",
+       "label": "GPS accuracy (m)",
+       "type": "number"
+      },
+      {
+       "key": "placed_by",
+       "label": "Location source",
+       "type": "text"
+      }
+     ]
+    }
+   },
+   "attributeForm": {
+    "fields": [
+     {
+      "field": "obs_id",
+      "alias": "Record ID",
+      "widget": "text",
+      "defaultValue": "uuid('WithoutBraces')"
+     },
+     {
+      "field": "obs_date",
+      "alias": "Date and time",
+      "widget": "date",
+      "required": true,
+      "defaultValue": "now()"
+     },
+     {
+      "field": "observer",
+      "alias": "Observer",
+      "widget": "text",
+      "required": true,
+      "defaultValue": "if(@user_full_name = 'local-user', NULL, @user_full_name)"
+     },
+     {
+      "field": "state",
+      "alias": "State",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "GA"
+       },
+       {
+        "value": "NC"
+       },
+       {
+        "value": "TN"
+       },
+       {
+        "value": "VA"
+       },
+       {
+        "value": "WV"
+       },
+       {
+        "value": "MD"
+       },
+       {
+        "value": "PA"
+       },
+       {
+        "value": "NJ"
+       },
+       {
+        "value": "NY"
+       },
+       {
+        "value": "CT"
+       },
+       {
+        "value": "MA"
+       },
+       {
+        "value": "VT"
+       },
+       {
+        "value": "NH"
+       },
+       {
+        "value": "ME"
+       }
+      ]
+     },
+     {
+      "field": "club_section",
+      "alias": "Club section",
+      "widget": "text"
+     },
+     {
+      "field": "activity",
+      "alias": "Activity",
+      "widget": "valueMap",
+      "required": true,
+      "valueMap": [
+       {
+        "value": "Invasive treatment"
+       },
+       {
+        "value": "Invasive survey"
+       },
+       {
+        "value": "Mowing/brush cut"
+       },
+       {
+        "value": "Seeding/planting"
+       },
+       {
+        "value": "Hemlock treatment"
+       },
+       {
+        "value": "Biocontrol release"
+       },
+       {
+        "value": "Rare plant survey"
+       },
+       {
+        "value": "Other (see notes)"
+       }
+      ]
+     },
+     {
+      "field": "target_species",
+      "alias": "Target species",
+      "widget": "text"
+     },
+     {
+      "field": "method",
+      "alias": "Method",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "Hand pull"
+       },
+       {
+        "value": "Cut"
+       },
+       {
+        "value": "Foliar spray"
+       },
+       {
+        "value": "Cut stump"
+       },
+       {
+        "value": "Basal bark"
+       },
+       {
+        "value": "Hack and squirt"
+       },
+       {
+        "value": "Soil drench/injection"
+       },
+       {
+        "value": "Mechanical"
+       },
+       {
+        "value": "Survey only"
+       }
+      ]
+     },
+     {
+      "field": "product",
+      "alias": "Herbicide/pesticide product",
+      "widget": "text",
+      "visibilityExpression": "[\"in\", [\"get\", \"method\"], [\"literal\", [\"Foliar spray\", \"Cut stump\", \"Basal bark\", \"Hack and squirt\", \"Soil drench/injection\"]]]"
+     },
+     {
+      "field": "epa_reg",
+      "alias": "EPA Reg. No.",
+      "widget": "text",
+      "visibilityExpression": "[\"in\", [\"get\", \"method\"], [\"literal\", [\"Foliar spray\", \"Cut stump\", \"Basal bark\", \"Hack and squirt\", \"Soil drench/injection\"]]]"
+     },
+     {
+      "field": "amount_used",
+      "alias": "Amount of mix used (gal)",
+      "widget": "number",
+      "min": 0,
+      "visibilityExpression": "[\"in\", [\"get\", \"method\"], [\"literal\", [\"Foliar spray\", \"Cut stump\", \"Basal bark\", \"Hack and squirt\", \"Soil drench/injection\"]]]"
+     },
+     {
+      "field": "applicator",
+      "alias": "Certified applicator",
+      "widget": "text",
+      "visibilityExpression": "[\"in\", [\"get\", \"method\"], [\"literal\", [\"Foliar spray\", \"Cut stump\", \"Basal bark\", \"Hack and squirt\", \"Soil drench/injection\"]]]"
+     },
+     {
+      "field": "pct_controlled",
+      "alias": "Estimated % of target controlled",
+      "widget": "range",
+      "min": 0,
+      "max": 100,
+      "step": 5
+     },
+     {
+      "field": "crew",
+      "alias": "Crew or partner",
+      "widget": "text"
+     },
+     {
+      "field": "person_hours",
+      "alias": "Person-hours",
+      "widget": "number",
+      "min": 0
+     },
+     {
+      "field": "notes",
+      "alias": "Notes",
+      "widget": "text"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "alias": "GPS accuracy (m)",
+      "widget": "number",
+      "defaultValue": "round(@position_horizontal_accuracy, 1)",
+      "min": 0
+     },
+     {
+      "field": "placed_by",
+      "alias": "Location source",
+      "widget": "valueMap",
+      "valueMap": [
+       {
+        "value": "GPS",
+        "label": "GPS fix"
+       },
+       {
+        "value": "Map",
+        "label": "Placed on map"
+       }
+      ],
+      "defaultValue": "if(@position_coordinate is not null, 'GPS', 'Map')"
+     }
+    ],
+    "sections": [
+     {
+      "title": "Observation",
+      "fields": [
+       "obs_date",
+       "observer",
+       "state",
+       "club_section"
+      ]
+     },
+     {
+      "title": "Activity",
+      "fields": [
+       "activity",
+       "target_species",
+       "method",
+       "pct_controlled"
+      ]
+     },
+     {
+      "title": "Pesticide use",
+      "fields": [
+       "product",
+       "epa_reg",
+       "amount_used",
+       "applicator"
+      ]
+     },
+     {
+      "title": "Effort",
+      "fields": [
+       "crew",
+       "person_hours"
+      ]
+     },
+     {
+      "title": "Notes",
+      "fields": [
+       "notes"
+      ]
+     },
+     {
+      "title": "Record",
+      "fields": [
+       "obs_id",
+       "gps_accuracy_m",
+       "placed_by"
+      ]
+     }
+    ]
+   },
+   "editorTracking": {
+    "enabled": true,
+    "createdByField": "created_by",
+    "createdAtField": "created_at",
+    "editedByField": "edited_by",
+    "editedAtField": "edited_at"
+   },
+   "popup": {
+    "click": true,
+    "titleField": "activity",
+    "fields": [
+     {
+      "field": "obs_date",
+      "label": "Date and time"
+     },
+     {
+      "field": "observer",
+      "label": "Observer"
+     },
+     {
+      "field": "state",
+      "label": "State"
+     },
+     {
+      "field": "club_section",
+      "label": "Club section"
+     },
+     {
+      "field": "activity",
+      "label": "Activity"
+     },
+     {
+      "field": "target_species",
+      "label": "Target species"
+     },
+     {
+      "field": "method",
+      "label": "Method"
+     },
+     {
+      "field": "product",
+      "label": "Herbicide/pesticide product"
+     },
+     {
+      "field": "epa_reg",
+      "label": "EPA Reg. No."
+     },
+     {
+      "field": "amount_used",
+      "label": "Amount of mix used (gal)"
+     },
+     {
+      "field": "applicator",
+      "label": "Certified applicator"
+     },
+     {
+      "field": "pct_controlled",
+      "label": "Estimated % of target controlled"
+     },
+     {
+      "field": "crew",
+      "label": "Crew or partner"
+     },
+     {
+      "field": "person_hours",
+      "label": "Person-hours"
+     },
+     {
+      "field": "notes",
+      "label": "Notes"
+     },
+     {
+      "field": "gps_accuracy_m",
+      "label": "GPS accuracy (m)"
+     },
+     {
+      "field": "photo",
+      "label": "Photo",
+      "kind": "image"
+     }
+    ],
+    "maxWidth": 420,
+    "imageHeight": 220
+   },
+   "descriptiveMetadata": {
+    "title": "Treatment and survey areas",
+    "abstract": "Field observations collected along the Appalachian National Scenic Trail (Treatment and survey areas).",
+    "keywords": [
+     "Appalachian Trail",
+     "APPA",
+     "field collection"
+    ],
+    "contact": {
+     "organization": "National Park Service, Appalachian Trail Park Office"
+    }
+   }
+  },
+  {
+   "id": "r-shelters",
+   "name": "Shelters",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "arcgisQueryUrl": "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/ANST_Facilities/FeatureServer/4/query"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "minZoom": 0,
+    "fillColor": "#D62839",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 1.5,
+    "circleRadius": 5,
+    "fillOpacity": 1
+   },
+   "groupId": "g-fac",
+   "metadata": {
+    "sourceKind": "arcgis-feature-query",
+    "viewportLoading": true
+   },
+   "capabilities": {
+    "query": true,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": true,
+    "titleExpression": "[\"coalesce\", [\"get\", \"Name\"], [\"get\", \"NAME\"], [\"get\", \"Label\"], \"Shelter\"]",
+    "bodyExpression": "[\"literal\", \"Shelter\"]"
+   }
+  },
+  {
+   "id": "r-campsites",
+   "name": "Campsites",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "arcgisQueryUrl": "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/ANST_Facilities/FeatureServer/1/query"
+   },
+   "visible": false,
+   "opacity": 1,
+   "style": {
+    "minZoom": 0,
+    "fillColor": "#2E6B3A",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 1.5,
+    "circleRadius": 5,
+    "fillOpacity": 1
+   },
+   "groupId": "g-fac",
+   "metadata": {
+    "sourceKind": "arcgis-feature-query",
+    "viewportLoading": true
+   },
+   "capabilities": {
+    "query": true,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": true,
+    "titleExpression": "[\"coalesce\", [\"get\", \"Name\"], [\"get\", \"NAME\"], [\"get\", \"Label\"], \"Campsite\"]",
+    "bodyExpression": "[\"literal\", \"Campsite\"]"
+   }
+  },
+  {
+   "id": "r-parking",
+   "name": "Parking",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "arcgisQueryUrl": "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/ANST_Facilities/FeatureServer/2/query"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "minZoom": 0,
+    "fillColor": "#23436B",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 1.5,
+    "circleRadius": 5,
+    "fillOpacity": 1
+   },
+   "groupId": "g-fac",
+   "metadata": {
+    "sourceKind": "arcgis-feature-query",
+    "viewportLoading": true
+   },
+   "capabilities": {
+    "query": true,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": true,
+    "titleExpression": "[\"coalesce\", [\"get\", \"Name\"], [\"get\", \"NAME\"], [\"get\", \"Label\"], \"Parking area\"]",
+    "bodyExpression": "[\"literal\", \"Parking area\"]"
+   }
+  },
+  {
+   "id": "r-privies",
+   "name": "Privies",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "arcgisQueryUrl": "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/ANST_Facilities/FeatureServer/3/query"
+   },
+   "visible": false,
+   "opacity": 1,
+   "style": {
+    "minZoom": 0,
+    "fillColor": "#74224E",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 1.5,
+    "circleRadius": 5,
+    "fillOpacity": 1
+   },
+   "groupId": "g-fac",
+   "metadata": {
+    "sourceKind": "arcgis-feature-query",
+    "viewportLoading": true
+   },
+   "capabilities": {
+    "query": true,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": true,
+    "titleExpression": "[\"coalesce\", [\"get\", \"Name\"], [\"get\", \"NAME\"], [\"get\", \"Label\"], \"Privy\"]",
+    "bodyExpression": "[\"literal\", \"Privy\"]"
+   }
+  },
+  {
+   "id": "r-bridges",
+   "name": "Bridges",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "arcgisQueryUrl": "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/ANST_Facilities/FeatureServer/0/query"
+   },
+   "visible": false,
+   "opacity": 1,
+   "style": {
+    "minZoom": 0,
+    "fillColor": "#4FA096",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 1.5,
+    "circleRadius": 5,
+    "fillOpacity": 1
+   },
+   "groupId": "g-fac",
+   "metadata": {
+    "sourceKind": "arcgis-feature-query",
+    "viewportLoading": true
+   },
+   "capabilities": {
+    "query": true,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": true,
+    "titleExpression": "[\"coalesce\", [\"get\", \"Name\"], [\"get\", \"NAME\"], [\"get\", \"Label\"], \"Bridge\"]",
+    "bodyExpression": "[\"literal\", \"Bridge\"]"
+   }
+  },
+  {
+   "id": "r-vistas",
+   "name": "Vistas",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "arcgisQueryUrl": "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/ANST_Facilities/FeatureServer/5/query"
+   },
+   "visible": false,
+   "opacity": 1,
+   "style": {
+    "minZoom": 0,
+    "fillColor": "#B38E2F",
+    "strokeColor": "#ffffff",
+    "strokeWidth": 1.5,
+    "circleRadius": 5,
+    "fillOpacity": 1
+   },
+   "groupId": "g-fac",
+   "metadata": {
+    "sourceKind": "arcgis-feature-query",
+    "viewportLoading": true
+   },
+   "capabilities": {
+    "query": true,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": true,
+    "titleExpression": "[\"coalesce\", [\"get\", \"Name\"], [\"get\", \"NAME\"], [\"get\", \"Label\"], \"Vista\"]",
+    "bodyExpression": "[\"literal\", \"Vista\"]"
+   }
+  },
+  {
+   "id": "r-centerline",
+   "name": "A.T. centerline",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "arcgisQueryUrl": "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/ANST_Centerline/FeatureServer/0/query"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "minZoom": 0,
+    "strokeColor": "#14294A",
+    "strokeWidth": 3,
+    "fillColor": "#14294A"
+   },
+   "groupId": "g-trail",
+   "metadata": {
+    "sourceKind": "arcgis-feature-query",
+    "viewportLoading": true
+   },
+   "capabilities": {
+    "query": true,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": true,
+    "titleExpression": "[\"coalesce\", [\"get\", \"Name\"], [\"get\", \"NAME\"], [\"get\", \"Label\"], \"Appalachian Trail\"]",
+    "bodyExpression": "[\"literal\", \"Appalachian Trail\"]"
+   }
+  },
+  {
+   "id": "r-sidetrails",
+   "name": "Side trails",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "arcgisQueryUrl": "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/ANST_Facilities/FeatureServer/6/query"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "minZoom": 10,
+    "strokeColor": "#35A7FF",
+    "strokeWidth": 2,
+    "fillColor": "#35A7FF",
+    "strokeDash": [
+     2,
+     1.5
+    ]
+   },
+   "groupId": "g-trail",
+   "metadata": {
+    "sourceKind": "arcgis-feature-query",
+    "viewportLoading": true
+   },
+   "capabilities": {
+    "query": true,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": true,
+    "titleExpression": "[\"coalesce\", [\"get\", \"Name\"], [\"get\", \"NAME\"], [\"get\", \"Label\"], \"Side trail\"]",
+    "bodyExpression": "[\"literal\", \"Side trail\"]"
+   }
+  },
+  {
+   "id": "r-lands",
+   "name": "Administrative areas",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "arcgisQueryUrl": "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/AT_Lands/FeatureServer/1/query"
+   },
+   "visible": true,
+   "opacity": 1,
+   "style": {
+    "minZoom": 11,
+    "fillColor": "#004DA8",
+    "strokeColor": "#004DA8",
+    "strokeWidth": 0.8,
+    "fillOpacity": 0.35,
+    "vectorStyleMode": "categorized",
+    "vectorStyleProperty": "LEGEND3",
+    "vectorStyleStops": [
+     {
+      "value": "FEDERAL LAND - NPS - APPA FEE",
+      "color": "#004DA8",
+      "label": "NPS, A.T. fee land"
+     },
+     {
+      "value": "FEDERAL LAND - NPS - APPA EASEMENT",
+      "color": "#9187F5",
+      "label": "NPS, A.T. easement"
+     },
+     {
+      "value": "FEDERAL LAND - NPS - APPA ROW EASEMENT",
+      "color": "#BED2FF",
+      "label": "NPS, A.T. right-of-way easement"
+     },
+     {
+      "value": "FEDERAL LAND - NPS - APPA ADMINISTRATIVELY TRANSFERRED LANDS",
+      "color": "#FFBEBE",
+      "label": "NPS, A.T. administratively transferred"
+     },
+     {
+      "value": "FEDERAL LAND - NPS - OTHER",
+      "color": "#DF73FF",
+      "label": "NPS, other park units"
+     },
+     {
+      "value": "FEDERAL LAND - USFS",
+      "color": "#267300",
+      "label": "US Forest Service"
+     },
+     {
+      "value": "FEDERAL LAND - USFS - APPA ADMINISTRATIVELY TRANSFERRED LANDS",
+      "color": "#A8A800",
+      "label": "USFS, A.T. administratively transferred"
+     },
+     {
+      "value": "FEDERAL LAND - USFWS",
+      "color": "#00A884",
+      "label": "US Fish and Wildlife Service"
+     },
+     {
+      "value": "FEDERAL LAND - OTHER",
+      "color": "#FFAA00",
+      "label": "Other federal"
+     },
+     {
+      "value": "STATE LAND",
+      "color": "#55FF00",
+      "label": "State"
+     },
+     {
+      "value": "CONSERVATION LAND",
+      "color": "#D3FFBE",
+      "label": "Conservation land"
+     },
+     {
+      "value": "TOWN LAND",
+      "color": "#FFFF73",
+      "label": "Town"
+     }
+    ]
+   },
+   "groupId": "g-land",
+   "metadata": {
+    "sourceKind": "arcgis-feature-query",
+    "viewportLoading": true
+   },
+   "capabilities": {
+    "query": true,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": true,
+    "titleField": "NAME",
+    "fields": [
+     {
+      "field": "LEGEND3",
+      "label": "Ownership"
+     },
+     {
+      "field": "ADMIN",
+      "label": "Administered by"
+     },
+     {
+      "field": "TRACT1",
+      "label": "Tract"
+     },
+     {
+      "field": "ACRES",
+      "label": "Acres",
+      "kind": "number",
+      "format": {
+       "decimals": 1
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "r-mland",
+   "name": "Maintained landscapes",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "data": "https://grid.trailassessment.org/data/maintained_landscapes.json"
+   },
+   "visible": true,
+   "opacity": 1,
+   "groupId": "g-land",
+   "style": {
+    "fillColor": "#B5A33A",
+    "strokeColor": "#8A7B22",
+    "strokeWidth": 1,
+    "fillOpacity": 0.35
+   },
+   "metadata": {},
+   "capabilities": {
+    "query": true,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": true,
+    "titleField": "Type",
+    "fields": [
+     {
+      "field": "Type",
+      "label": "Type"
+     },
+     {
+      "field": "Acres",
+      "label": "Acres",
+      "kind": "number",
+      "format": {
+       "decimals": 1
+      }
+     },
+     {
+      "field": "Trail_Club",
+      "label": "Club section"
+     }
+    ]
+   }
+  },
+  {
+   "id": "r-states",
+   "name": "States",
+   "type": "geojson",
+   "source": {
+    "type": "geojson",
+    "data": "https://grid.trailassessment.org/data/states.json"
+   },
+   "visible": true,
+   "opacity": 1,
+   "groupId": "g-land",
+   "style": {
+    "fillColor": "#000000",
+    "fillOpacity": 0,
+    "strokeColor": "#5D6D7E",
+    "strokeWidth": 1.2,
+    "strokeDash": [
+     3,
+     2
+    ]
+   },
+   "metadata": {},
+   "capabilities": {
+    "query": false,
+    "create": false,
+    "update": false,
+    "delete": false,
+    "export": true
+   },
+   "popup": {
+    "click": false
+   }
+  },
+  {
+   "id": "b-imagery",
+   "name": "USGS imagery",
+   "type": "xyz",
+   "groupId": "g-base",
+   "visible": false,
+   "opacity": 1,
+   "source": {
+    "type": "raster",
+    "tiles": [
+     "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+    ],
+    "tileSize": 256,
+    "maxzoom": 16,
+    "attribution": "USGS The National Map"
+   },
+   "style": {},
+   "metadata": {}
+  },
+  {
+   "id": "b-relief",
+   "name": "USGS shaded relief",
+   "type": "xyz",
+   "groupId": "g-base",
+   "visible": false,
+   "opacity": 0.6,
+   "source": {
+    "type": "raster",
+    "tiles": [
+     "https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/tile/{z}/{y}/{x}"
+    ],
+    "tileSize": 256,
+    "maxzoom": 16,
+    "attribution": "USGS The National Map"
+   },
+   "style": {},
+   "metadata": {}
+  },
+  {
+   "id": "b-otm",
+   "name": "OpenTopoMap",
+   "type": "xyz",
+   "groupId": "g-base",
+   "visible": false,
+   "opacity": 1,
+   "source": {
+    "type": "raster",
+    "tiles": [
+     "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+     "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
+     "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
+    ],
+    "tileSize": 256,
+    "maxzoom": 17,
+    "attribution": "Map data © OpenStreetMap contributors, SRTM. Style © OpenTopoMap (CC-BY-SA)"
+   },
+   "style": {},
+   "metadata": {}
+  }
+ ],
+ "selectedLayerId": "c-invasive",
+ "layerGroups": [
+  {
+   "id": "g-collect",
+   "name": "Field collection",
+   "parentId": null,
+   "collapsed": false,
+   "visible": true,
+   "opacity": 1
+  },
+  {
+   "id": "g-fac",
+   "name": "Trail facilities (ANST)",
+   "parentId": null,
+   "collapsed": true,
+   "visible": true,
+   "opacity": 1
+  },
+  {
+   "id": "g-trail",
+   "name": "Trail",
+   "parentId": null,
+   "collapsed": true,
+   "visible": true,
+   "opacity": 1
+  },
+  {
+   "id": "g-land",
+   "name": "Lands and landscapes",
+   "parentId": null,
+   "collapsed": true,
+   "visible": true,
+   "opacity": 1
+  },
+  {
+   "id": "g-base",
+   "name": "Imagery and topo",
+   "parentId": null,
+   "collapsed": true,
+   "visible": true,
+   "opacity": 1
+  }
+ ],
+ "styles": {},
+ "bookmarkGroups": [
+  {
+   "id": "bm-at",
+   "name": "Along the A.T.",
+   "collapsed": false
+  }
+ ],
+ "bookmarks": [
+  {
+   "id": "bm0",
+   "name": "Springer Mountain, GA",
+   "lng": -84.1938,
+   "lat": 34.6268,
+   "zoom": 13,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm1",
+   "name": "Great Smoky Mountains",
+   "lng": -83.4985,
+   "lat": 35.5628,
+   "zoom": 11,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm2",
+   "name": "Roan Highlands",
+   "lng": -82.11,
+   "lat": 36.1,
+   "zoom": 12,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm3",
+   "name": "Grayson Highlands, VA",
+   "lng": -81.5,
+   "lat": 36.63,
+   "zoom": 12,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm4",
+   "name": "Shenandoah (Big Meadows)",
+   "lng": -78.44,
+   "lat": 38.52,
+   "zoom": 11,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm5",
+   "name": "Harpers Ferry, WV",
+   "lng": -77.7286,
+   "lat": 39.3254,
+   "zoom": 13,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm6",
+   "name": "Cumberland Valley, PA",
+   "lng": -77.2,
+   "lat": 40.12,
+   "zoom": 11,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm7",
+   "name": "Delaware Water Gap",
+   "lng": -75.14,
+   "lat": 40.97,
+   "zoom": 12,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm8",
+   "name": "Bear Mountain, NY",
+   "lng": -73.99,
+   "lat": 41.31,
+   "zoom": 12,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm9",
+   "name": "Mount Greylock, MA",
+   "lng": -73.166,
+   "lat": 42.637,
+   "zoom": 12,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm10",
+   "name": "Hanover, NH",
+   "lng": -72.29,
+   "lat": 43.7,
+   "zoom": 12,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm11",
+   "name": "Mount Washington, NH",
+   "lng": -71.3033,
+   "lat": 44.2706,
+   "zoom": 12,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  },
+  {
+   "id": "bm12",
+   "name": "Katahdin, ME",
+   "lng": -68.9213,
+   "lat": 45.9044,
+   "zoom": 12,
+   "pitch": 0,
+   "bearing": 0,
+   "createdAt": 1795800000000,
+   "groupId": "bm-at"
+  }
+ ],
+ "widgets": [
+  {
+   "id": "w-count-inv",
+   "layerId": "c-invasive",
+   "type": "indicator",
+   "indicatorAggregation": "count",
+   "title": "Invasive observations",
+   "color": "#C0392B"
+  },
+  {
+   "id": "w-inv-species",
+   "layerId": "c-invasive",
+   "type": "bar",
+   "category": "species",
+   "aggregation": "count",
+   "title": "Invasive observations by species",
+   "color": "#C0392B"
+  },
+  {
+   "id": "w-hazard-risk",
+   "layerId": "c-hazard",
+   "type": "pie",
+   "category": "risk_rating",
+   "aggregation": "count",
+   "title": "Hazard trees by risk rating",
+   "color": "#E67E22"
+  },
+  {
+   "id": "w-trail-issue",
+   "layerId": "c-trail",
+   "type": "bar",
+   "category": "issue",
+   "aggregation": "count",
+   "title": "Trail issues by type",
+   "color": "#1F618D"
+  },
+  {
+   "id": "w-fac-cond",
+   "layerId": "c-facility",
+   "type": "bar",
+   "category": "condition",
+   "aggregation": "count",
+   "title": "Facility condition",
+   "color": "#D62839"
+  },
+  {
+   "id": "w-pest",
+   "layerId": "c-pest",
+   "type": "bar",
+   "category": "agent",
+   "aggregation": "count",
+   "title": "Pest and disease reports",
+   "color": "#7D3C98"
+  }
+ ],
+ "dashboardColumns": 2,
+ "interaction": {
+  "identify": "all",
+  "controls": {
+   "geolocate": true,
+   "scale": true,
+   "search": true,
+   "measure": {
+    "visible": true,
+    "collapsed": true,
+    "distanceUnit": "feet",
+    "areaUnit": "acres"
+   }
+  }
+ },
+ "metadata": {
+  "description": "Field data collection for the Appalachian National Scenic Trail, built on GeoLibre. Reference layers match the ACT dashboard (act.atconservation.com). Use Controls → Field Collection to capture observations.",
+  "author": "Appalachian Trail Park Office (APPA), National Park Service",
+  "homepage": "https://act.atconservation.com/"
+ }
+}

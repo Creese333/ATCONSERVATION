@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ACT Field – A.T. data collection</title>
+<meta name="description" content="Field data collection for the Appalachian Trail, built on GeoLibre with the ACT dashboard's trail, facility and land layers.">
+<link rel="icon" href="images/favicon-32.png">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<style>
+:root{--hdr:#1C3B5A;--ink:#EEF3F8;--ground:#1F3049;--panel:#142235;--line:#33465F;--muted:#BCC9D8;--blaze:#8EC2F0;--accent:#3FA796;
+  --body:'Atkinson Hyperlegible Next',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.5 var(--body);-webkit-text-size-adjust:100%}
+header{background:var(--hdr);border-bottom:1px solid var(--line);padding:14px max(18px,env(safe-area-inset-left))}
+header a{color:var(--ink);text-decoration:none;font-weight:700;letter-spacing:.02em}
+header span{color:var(--muted);font-weight:400;margin-left:8px}
+main{max-width:760px;margin:0 auto;padding:26px 18px 60px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}
+h2{font-size:18px;margin:34px 0 10px;color:var(--blaze)}
+p{margin:0 0 12px;color:var(--muted)}
+p strong,li strong{color:var(--ink)}
+.go{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 6px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:8px;font-weight:700;text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--panel)}
+.btn.main{background:var(--accent);border-color:var(--accent);color:#08251F}
+.btn:focus-visible{outline:3px solid var(--blaze);outline-offset:2px}
+.url{font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px;word-break:break-all;color:var(--ink);margin:6px 0 0}
+ol,ul{margin:0 0 12px;padding-left:22px;color:var(--muted)}
+li{margin:4px 0}
+.layers{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin:8px 0 0;padding:0;list-style:none}
+.layers li{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:0;color:var(--ink)}
+.layers small{display:block;color:var(--muted);font-size:13px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.note{border-left:3px solid var(--blaze);padding:8px 12px;background:var(--panel);border-radius:0 6px 6px 0}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin-top:40px;padding-top:14px}
+footer a{color:var(--blaze)}
+</style>
+</head>
+<body>
+<header><a href="https://act.atconservation.com/">ACT</a><span>Field</span></header>
+<main>
+<h1>A.T. field data collection</h1>
+<p>Capture invasive plants, forest pests, hazard trees, trail and facility conditions, grassland checks and treatment areas along the Appalachian Trail, on a phone, tablet or computer. It runs in <strong>GeoLibre</strong>, a free, open-source GIS, over the same trail, facility and land layers as the ACT dashboard.</p>
+
+<div class="go">
+  <a class="btn main" id="openweb" href="https://web.geolibre.app/?url=https://act.atconservation.com/collect.geolibre">Open in GeoLibre</a>
+  <a class="btn" href="collect.geolibre" download>Download project file</a>
+</div>
+<p class="url" id="purl">https://act.atconservation.com/collect.geolibre</p>
+
+<h2>Collect in the field</h2>
+<ol>
+  <li>Open the project (button above, or in the GeoLibre app: <strong>Project → Open From → URL…</strong> and paste the address above).</li>
+  <li>Before you lose signal, zoom to your section and choose <strong>Project → Offline Basemap…</strong> to cache the map.</li>
+  <li>Choose <strong>Controls → Field collection…</strong>, pick a layer, then <strong>Use GPS</strong> or <strong>Pick on map</strong>.</li>
+  <li>Fill in the form and add photos. Date, record ID, GPS accuracy and whether the point came from GPS fill in for you.</li>
+  <li>Close the dialog between records; the <strong>Open Field Collection</strong> pill keeps your session.</li>
+</ol>
+<p class="note"><strong>Send your records back.</strong> Records are kept in the project on your device. At the end of the day use <strong>Project → Save As…</strong> to keep the whole project, or a layer's <strong>⋯ → Export</strong> to send GeoJSON, CSV, Shapefile or GeoPackage to the resource office.</p>
+
+<h2>Forms</h2>
+<ul class="layers">
+  <li><span class="dot" style="background:#C0392B"></span>Invasive plant observations<small>Species, cover class, patch size, phenology, treatment</small></li>
+  <li><span class="dot" style="background:#7D3C98"></span>Forest pest and disease<small>HWA, SLF, EAB, BLD and others; host, crown, severity</small></li>
+  <li><span class="dot" style="background:#E67E22"></span>Hazard trees<small>ISA risk matrix scores itself; bat roost potential</small></li>
+  <li><span class="dot" style="background:#1F618D"></span>Trail condition issues<small>Erosion, drainage, blowdowns, blazes; severity and crew</small></li>
+  <li><span class="dot" style="background:#D62839"></span>Facility condition<small>Shelters, privies, campsites, bridges, springs</small></li>
+  <li><span class="dot" style="background:#B5A33A"></span>Grassland field checks<small>Use, mowing, woody and invasive cover, birds, AgSUP</small></li>
+  <li><span class="dot" style="background:#117A65"></span>Treatment and survey areas<small>Polygons; method, product, EPA Reg. No., effort</small></li>
+</ul>
+
+<h2>Reference layers</h2>
+<p>A.T. centerline, side trails, shelters, campsites, parking, privies, bridges and vistas (ANST services), administrative areas by ownership, maintained landscapes and states, with USGS imagery, USGS shaded relief and OpenTopoMap under them. Facility and trail layers load for the area in view.</p>
+
+<h2>Get the GeoLibre app</h2>
+<p>The project also opens in the GeoLibre apps, which use the device GPS (and, on Android, a Bluetooth GNSS receiver with RTK corrections):
+<a href="https://apps.apple.com/app/geolibre/id6796039674" style="color:var(--blaze)">iPhone and iPad</a> ·
+<a href="https://play.google.com/store/apps/details?id=org.geolibre.app" style="color:var(--blaze)">Android</a> ·
+<a href="https://geolibre.app/downloads/" style="color:var(--blaze)">Windows, macOS, Linux</a>.</p>
+
+<footer>Appalachian Trail Park Office, National Park Service · Part of <a href="https://act.atconservation.com/">ACT – Appalachian Conservation Tool</a> · Built on <a href="https://github.com/opengeos/GeoLibre">GeoLibre</a> (MIT)</footer>
+</main>
+<script>
+/* point the buttons at this copy of the project, wherever the page is served from */
+try {
+  var u = new URL('collect.geolibre', location.href).href;
+  if (/^https:/.test(u)) {
+    document.getElementById('openweb').href = 'https://web.geolibre.app/?url=' + u;
+    document.getElementById('purl').textContent = u;
+  }
+} catch (e) {}
+</script>
+</body>
+</html>
